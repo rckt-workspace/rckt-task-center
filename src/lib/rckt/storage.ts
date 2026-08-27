@@ -1,9 +1,9 @@
-import type { AppData, Identidad, Task } from "./types";
+import type { AppData, AttentionPoint, Identidad, Task } from "./types";
 
 const DATA_KEY = "rckt.control-semanal.data.v1";
 const USER_KEY = "rckt.control-semanal.user.v1";
 
-const EMPTY: AppData = { tasks: [], semanas: [] };
+const EMPTY: AppData = { tasks: [], semanas: [], puntos: [] };
 
 /**
  * Capa de persistencia. Hoy usa localStorage; al conectar Supabase
@@ -18,6 +18,7 @@ export function loadData(): AppData {
     return {
       tasks: Array.isArray(parsed.tasks) ? (parsed.tasks as Task[]) : [],
       semanas: Array.isArray(parsed.semanas) ? (parsed.semanas as string[]) : [],
+      puntos: Array.isArray(parsed.puntos) ? (parsed.puntos as AttentionPoint[]) : [],
     };
   } catch {
     return EMPTY;
