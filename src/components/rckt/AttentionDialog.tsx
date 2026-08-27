@@ -84,7 +84,7 @@ export function AttentionDialog({ open, onOpenChange, weekTasks, punto, onSubmit
                 <SelectContent>
                   {weekTasks.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {taskCode(t.id)} · {t.tarea} — {t.cliente}
+                      {t.tarea} — {t.cliente}
                     </SelectItem>
                   ))}
                 </SelectContent>

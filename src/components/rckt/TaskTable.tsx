@@ -36,7 +36,6 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/70 hover:bg-secondary/70">
-              <TableHead className="w-[84px]">ID</TableHead>
               <TableHead className="w-[120px]">Estado</TableHead>
               {showColaborador ? <TableHead>Colaborador</TableHead> : null}
               <TableHead>Cliente</TableHead>

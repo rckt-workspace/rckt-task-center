@@ -70,7 +70,7 @@ export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete }: P
                       >
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm font-medium">
-                            {task ? `${taskCode(task.id)} · ${task.tarea}` : "Tarea no disponible"}
+                            {task ? task.tarea : "Tarea no disponible"}
                           </p>
                           <div className="-mt-1.5 -mr-2 flex shrink-0">
                             <Button
