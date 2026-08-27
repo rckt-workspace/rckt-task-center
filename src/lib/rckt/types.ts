@@ -53,8 +53,28 @@ export interface Task {
   updatedAt: string;
 }
 
+export interface AttentionPoint {
+  id: string;
+  /** Lunes de la semana, formato ISO yyyy-MM-dd */
+  semana: string;
+  cliente: Cliente;
+  colaborador: Colaborador;
+  /** id de la tarea afectada */
+  taskId: string;
+  tipo: TipoAtencion;
+  motivo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppData {
   tasks: Task[];
   /** Semanas creadas manualmente (lunes ISO) */
   semanas: string[];
+  puntos: AttentionPoint[];
+}
+
+/** Código corto y estable para mostrar en la tabla. */
+export function taskCode(id: string): string {
+  return `#${id.slice(-4).toUpperCase()}`;
 }

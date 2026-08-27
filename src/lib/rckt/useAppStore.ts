@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadData, loadUser, newId, saveData, saveUser } from "./storage";
 import { todayISO } from "./dates";
-import type { AppData, Identidad, Task } from "./types";
+import type { AppData, AttentionPoint, Identidad, Task } from "./types";
 
 export interface TaskInput {
   colaborador: Task["colaborador"];
@@ -28,7 +28,7 @@ export function applyEstadoRules(
 }
 
 export function useAppStore() {
-  const [data, setData] = useState<AppData>({ tasks: [], semanas: [] });
+  const [data, setData] = useState<AppData>({ tasks: [], semanas: [], puntos: [] });
   const [user, setUserState] = useState<Identidad | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -79,7 +79,11 @@ export function useAppStore() {
   }, []);
 
   const deleteTask = useCallback((id: string) => {
-    setData((d) => ({ ...d, tasks: d.tasks.filter((t) => t.id !== id) }));
+    setData((d) => ({
+      ...d,
+      tasks: d.tasks.filter((t) => t.id !== id),
+      puntos: d.puntos.filter((p) => p.taskId !== id),
+    }));
   }, []);
 
   const addSemana = useCallback((mondayIso: string) => {
@@ -88,5 +92,33 @@ export function useAppStore() {
     );
   }, []);
 
-  return { data, user, hydrated, setUser, createTask, updateTask, deleteTask, addSemana };
+  const createPunto = useCallback(
+    (semana: string, input: Omit<AttentionPoint, "id" | "semana" | "createdAt" | "updatedAt">) => {
+      const now = new Date().toISOString();
+      const punto: AttentionPoint = {
+        id: newId(),
+        semana,
+        ...input,
+        createdAt: now,
+        updatedAt: now,
+      };
+      setData((d) => ({ ...d, puntos: [...d.puntos, punto] }));
+    },
+    [],
+  );
+
+  const updatePunto = useCallback((id: string, patch: Partial<AttentionPoint>) => {
+    setData((d) => ({
+      ...d,
+      puntos: d.puntos.map((p) =>
+        p.id === id ? { ...p, ...patch, updatedAt: new Date().toISOString() } : p,
+      ),
+    }));
+  }, []);
+
+  const deletePunto = useCallback((id: string) => {
+    setData((d) => ({ ...d, puntos: d.puntos.filter((p) => p.id !== id) }));
+  }, []);
+
+  return { data, user, hydrated, createPunto, updatePunto, deletePunto, setUser, createTask, updateTask, deleteTask, addSemana };
 }
