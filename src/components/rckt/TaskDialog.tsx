@@ -32,8 +32,8 @@ interface Props {
   mode: Mode;
   /** false = vista colaborador: solo estado, fecha de entrega y observaciones */
   canEditAll: boolean;
-  task?: Task | null;
-  defaultColaborador?: Colaborador;
+  task?: Task | null | undefined;
+  defaultColaborador?: Colaborador | undefined;
   onSubmit: (values: TaskInput) => void;
 }
 

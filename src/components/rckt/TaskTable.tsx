@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   tasks: Task[];
-  showColaborador?: boolean;
+  showColaborador?: boolean | undefined;
   onEdit: (task: Task) => void;
-  onDelete?: (task: Task) => void;
+  onDelete?: ((task: Task) => void) | undefined;
 }
 
 export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: Props) {
