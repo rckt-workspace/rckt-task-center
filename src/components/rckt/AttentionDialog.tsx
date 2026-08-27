@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TIPOS_ATENCION, taskCode } from "@/lib/rckt/types";
+import { TIPOS_ATENCION } from "@/lib/rckt/types";
 import type { AttentionPoint, Task, TipoAtencion } from "@/lib/rckt/types";
 
 export interface AttentionInput {
@@ -84,7 +84,7 @@ export function AttentionDialog({ open, onOpenChange, weekTasks, punto, onSubmit
                 <SelectContent>
                   {weekTasks.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {taskCode(t.id)} · {t.tarea} — {t.cliente}
+                      {t.tarea} — {t.cliente}
                     </SelectItem>
                   ))}
                 </SelectContent>

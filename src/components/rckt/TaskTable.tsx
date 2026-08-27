@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
 import { formatCO, isOverdue } from "@/lib/rckt/dates";
-import { taskCode, type Task } from "@/lib/rckt/types";
+import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -36,7 +36,6 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary/70 hover:bg-secondary/70">
-              <TableHead className="w-[84px]">ID</TableHead>
               <TableHead className="w-[120px]">Estado</TableHead>
               {showColaborador ? <TableHead>Colaborador</TableHead> : null}
               <TableHead>Cliente</TableHead>
@@ -56,9 +55,6 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
                   key={t.id}
                   className={cn(overdue && "bg-overdue-soft/70 hover:bg-overdue-soft")}
                 >
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {taskCode(t.id)}
-                  </TableCell>
                   <TableCell>
                     <EstadoBadge estado={t.estado} />
                   </TableCell>
@@ -121,7 +117,6 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-muted-foreground">{taskCode(t.id)}</span>
                   <EstadoBadge estado={t.estado} />
                 </div>
                 <div className="-mt-1 -mr-2 flex">
