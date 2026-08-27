@@ -79,7 +79,11 @@ export function useAppStore() {
   }, []);
 
   const deleteTask = useCallback((id: string) => {
-    setData((d) => ({ ...d, tasks: d.tasks.filter((t) => t.id !== id) }));
+    setData((d) => ({
+      ...d,
+      tasks: d.tasks.filter((t) => t.id !== id),
+      puntos: d.puntos.filter((p) => p.taskId !== id),
+    }));
   }, []);
 
   const addSemana = useCallback((mondayIso: string) => {
