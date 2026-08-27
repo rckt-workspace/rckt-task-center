@@ -1,6 +1,6 @@
 import { AlertOctagon, Clock, Pencil, Plus, Trash2, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TIPOS_ATENCION, taskCode } from "@/lib/rckt/types";
+import { TIPOS_ATENCION } from "@/lib/rckt/types";
 import type { AttentionPoint, Task, TipoAtencion } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
