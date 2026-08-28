@@ -172,6 +172,7 @@ function Index() {
   };
 
   const clearFilters = () => {
+    setSemana(currentWeekISO());
     setFColab(ALL);
     setFCliente(ALL);
     setFArea(ALL);
