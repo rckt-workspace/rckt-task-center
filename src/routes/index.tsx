@@ -29,6 +29,7 @@ import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
+import { CollaboratorHistory } from "@/components/rckt/CollaboratorHistory";
 import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import {
@@ -102,6 +103,15 @@ function Index() {
   const puntos = useMemo(
     () => store.data.puntos.filter((p) => p.semana === semana),
     [store.data.puntos, semana],
+  );
+
+  /** Histórico completo del colaborador activo (todas las semanas). */
+  const historicTasks = useMemo(
+    () =>
+      isCoord
+        ? []
+        : store.data.tasks.filter((t) => t.colaborador === user),
+    [store.data.tasks, isCoord, user],
   );
 
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
@@ -240,6 +250,8 @@ function Index() {
           </div>
           <StatsBar tasks={weekTasks} />
         </section>
+
+        {!isCoord ? <CollaboratorHistory tasks={historicTasks} /> : null}
 
         {isCoord ? (
           <section className="grid gap-4 lg:grid-cols-2">
