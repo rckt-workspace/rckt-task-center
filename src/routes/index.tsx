@@ -104,8 +104,8 @@ function Index() {
   }, [scopeTasks, isCoord, fColab, fCliente, fArea, fEstado]);
 
   const puntos = useMemo(
-    () => store.data.puntos.filter((p) => p.semana === semana),
-    [store.data.puntos, semana],
+    () => (historico ? store.data.puntos : store.data.puntos.filter((p) => p.semana === semana)),
+    [store.data.puntos, semana, historico],
   );
 
   /** Tareas abiertas (Pendiente/En curso) del colaborador en semanas anteriores a la actual. */
