@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadData, loadUser, newId, saveData, saveUser } from "./storage";
-import { todayISO } from "./dates";
+import { mondayOf, fromISO, toISO, todayISO } from "./dates";
 import type { AppData, AttentionPoint, Identidad, Task } from "./types";
+
+/** Semana (lunes ISO) correspondiente a una fecha límite. */
+export function semanaDeFechaLimite(fechaLimite: string): string {
+  return toISO(mondayOf(fromISO(fechaLimite)));
+}
 
 export interface TaskInput {
   colaborador: Task["colaborador"];
@@ -50,9 +55,11 @@ export function useAppStore() {
   const createTask = useCallback((semana: string, input: TaskInput) => {
     const now = new Date().toISOString();
     const fechaEntrega = applyEstadoRules(null, input.estado, input.fechaEntrega);
+    // La tarea pertenece a la semana de su fecha límite.
+    const semanaTarea = input.fechaLimite ? semanaDeFechaLimite(input.fechaLimite) : semana;
     const task: Task = {
       id: newId(),
-      semana,
+      semana: semanaTarea,
       ...input,
       fechaEntrega,
       createdAt: now,
@@ -67,6 +74,10 @@ export function useAppStore() {
       tasks: d.tasks.map((t) => {
         if (t.id !== id) return t;
         let next: Task = { ...t, ...patch, updatedAt: new Date().toISOString() };
+        // Si cambia la fecha límite, la tarea se mueve a la semana correspondiente.
+        if (patch.fechaLimite && patch.fechaLimite !== t.fechaLimite) {
+          next.semana = semanaDeFechaLimite(patch.fechaLimite);
+        }
         if (patch.estado && patch.estado !== t.estado) {
           next.fechaEntrega =
             patch.estado === "Completada"
