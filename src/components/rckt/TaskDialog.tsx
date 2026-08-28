@@ -207,6 +207,11 @@ export function TaskDialog({
               onChange={(iso) => setV({ ...v, fechaLimite: iso ?? "" })}
               disabled={!canEditAll}
             />
+            {canEditAll ? (
+              <p className="text-xs text-muted-foreground">
+                La tarea se asigna automáticamente a la semana de esta fecha.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
