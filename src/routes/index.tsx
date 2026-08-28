@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, CalendarPlus, Filter, History, Plus, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, CalendarPlus, Filter, History as HistoryIcon, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -220,7 +220,7 @@ function Index() {
               className="gap-2"
               onClick={() => setHistorico((h) => !h)}
             >
-              <History className="size-3.5" />
+              <HistoryIcon className="size-3.5" />
               {historico ? "Viendo histórico" : "Ver histórico"}
             </Button>
           ) : null}
@@ -343,7 +343,7 @@ function Index() {
               className="gap-1.5"
               onClick={() => setHistorico((h) => !h)}
             >
-              <History className="size-3.5" />
+              <HistoryIcon className="size-3.5" />
               Histórico
             </Button>
             <FilterSelect
