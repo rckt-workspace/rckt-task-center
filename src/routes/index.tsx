@@ -290,7 +290,6 @@ function Index() {
           <StatsBar tasks={weekTasks} />
         </section>
 
-        {isCoord ? <CollaboratorHistory tasks={store.data.tasks} /> : null}
 
         {isCoord ? (
           <section className="grid gap-4 lg:grid-cols-2">
