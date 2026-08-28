@@ -105,14 +105,17 @@ function Index() {
     [store.data.puntos, semana],
   );
 
-  /** Histórico completo del colaborador activo (todas las semanas). */
-  const historicTasks = useMemo(
-    () =>
-      isCoord
-        ? []
-        : store.data.tasks.filter((t) => t.colaborador === user),
-    [store.data.tasks, isCoord, user],
-  );
+  /** Tareas abiertas (Pendiente/En curso) del colaborador en semanas anteriores a la actual. */
+  const backlogTasks = useMemo(() => {
+    if (isCoord) return [];
+    const current = currentWeekISO();
+    return store.data.tasks
+      .filter(
+        (t) =>
+          t.colaborador === user && t.semana < current && t.estado !== "Completada",
+      )
+      .sort((a, b) => (a.semana < b.semana ? -1 : 1));
+  }, [store.data.tasks, isCoord, user]);
 
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const hasFilters =
@@ -251,7 +254,7 @@ function Index() {
           <StatsBar tasks={weekTasks} />
         </section>
 
-        {!isCoord ? <CollaboratorHistory tasks={historicTasks} /> : null}
+        {isCoord ? <CollaboratorHistory tasks={store.data.tasks} /> : null}
 
         {isCoord ? (
           <section className="grid gap-4 lg:grid-cols-2">
