@@ -206,8 +206,25 @@ function Index() {
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
         <section className="flex flex-wrap items-center gap-3">
-          <WeekPicker value={semana} onChange={setSemana} />
-          {semana !== currentWeekISO() ? (
+          <WeekPicker
+            value={semana}
+            onChange={(v) => {
+              setHistorico(false);
+              setSemana(v);
+            }}
+          />
+          {isCoord ? (
+            <Button
+              variant={historico ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+              onClick={() => setHistorico((h) => !h)}
+            >
+              <History className="size-3.5" />
+              {historico ? "Viendo histórico" : "Ver histórico"}
+            </Button>
+          ) : null}
+          {!historico && semana !== currentWeekISO() ? (
             <Button variant="ghost" size="sm" onClick={() => setSemana(currentWeekISO())}>
               Ir a semana actual
             </Button>
