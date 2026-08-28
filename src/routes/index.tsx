@@ -450,12 +450,14 @@ function FilterSelect({
   placeholder,
   options,
   labels,
+  showAll = true,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   options: string[];
   labels?: Record<string, string>;
+  showAll?: boolean;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -463,7 +465,7 @@ function FilterSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Todos · {placeholder}</SelectItem>
+        {showAll ? <SelectItem value={ALL}>Todos · {placeholder}</SelectItem> : null}
         {options.map((o) => (
           <SelectItem key={o} value={o}>
             {labels?.[o] ?? o}
