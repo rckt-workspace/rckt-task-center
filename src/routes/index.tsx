@@ -304,6 +304,14 @@ function Index() {
           <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-panel">
             <Filter className="size-4 text-muted-foreground" />
             <FilterSelect
+              value={semana}
+              onChange={setSemana}
+              placeholder="Semana"
+              options={availableWeeks}
+              labels={weekLabels}
+              showAll={false}
+            />
+            <FilterSelect
               value={fColab}
               onChange={setFColab}
               placeholder="Colaborador"
