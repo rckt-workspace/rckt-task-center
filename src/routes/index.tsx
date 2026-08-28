@@ -244,17 +244,17 @@ function Index() {
         </section>
 
         <section className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-display text-lg font-semibold">
+          <div>
+            <h2 className="text-base font-semibold">
               Semana {semana === current ? "actual" : "seleccionada"}
             </h2>
             <p className="text-sm text-muted-foreground">Semana del {weekLabel(semana)}</p>
-            {isPastWeek ? (
-              <span className="inline-flex items-center rounded-full border border-warn/25 bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">
-                Semana anterior · {abiertas} tarea{abiertas === 1 ? "" : "s"} sin cerrar
-              </span>
-            ) : null}
           </div>
+          {isPastWeek ? (
+            <span className="inline-flex items-center rounded-full border border-warn/25 bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">
+              Semana anterior · {abiertas} tarea{abiertas === 1 ? "" : "s"} sin cerrar
+            </span>
+          ) : null}
           <StatsBar tasks={weekTasks} />
         </section>
 
