@@ -118,8 +118,23 @@ function Index() {
   }, [store.data.tasks, isCoord, user]);
 
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
+  const current = currentWeekISO();
+  const availableWeeks = useMemo(
+    () =>
+      [...new Set([...store.data.semanas, ...store.data.tasks.map((t) => t.semana), current])]
+        .sort()
+        .reverse(),
+    [store.data.semanas, store.data.tasks, current],
+  );
+  const weekLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        availableWeeks.map((w) => [w, w === current ? `${weekLabel(w)} · Actual` : weekLabel(w)]),
+      ),
+    [availableWeeks, current],
+  );
   const hasFilters =
-    fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
+    semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
 
   if (!store.hydrated) {
     return <div className="min-h-screen" />;
@@ -164,6 +179,7 @@ function Index() {
   };
 
   const clearFilters = () => {
+    setSemana(currentWeekISO());
     setFColab(ALL);
     setFCliente(ALL);
     setFArea(ALL);
@@ -294,6 +310,14 @@ function Index() {
         {isCoord ? (
           <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-panel">
             <Filter className="size-4 text-muted-foreground" />
+            <FilterSelect
+              value={semana}
+              onChange={setSemana}
+              placeholder="Semana"
+              options={availableWeeks}
+              labels={weekLabels}
+              showAll={false}
+            />
             <FilterSelect
               value={fColab}
               onChange={setFColab}
@@ -440,11 +464,15 @@ function FilterSelect({
   onChange,
   placeholder,
   options,
+  labels,
+  showAll = true,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   options: string[];
+  labels?: Record<string, string>;
+  showAll?: boolean;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -452,10 +480,10 @@ function FilterSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Todos · {placeholder}</SelectItem>
+        {showAll ? <SelectItem value={ALL}>Todos · {placeholder}</SelectItem> : null}
         {options.map((o) => (
           <SelectItem key={o} value={o}>
-            {o}
+            {labels?.[o] ?? o}
           </SelectItem>
         ))}
       </SelectContent>
