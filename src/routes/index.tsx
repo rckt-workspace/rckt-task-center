@@ -272,9 +272,15 @@ function Index() {
         <section className="space-y-3">
           <div>
             <h2 className="text-base font-semibold">
-              Semana {semana === current ? "actual" : "seleccionada"}
+              {historico
+                ? "Histórico acumulado"
+                : `Semana ${semana === current ? "actual" : "seleccionada"}`}
             </h2>
-            <p className="text-sm text-muted-foreground">Semana del {weekLabel(semana)}</p>
+            <p className="text-sm text-muted-foreground">
+              {historico
+                ? "Todas las tareas registradas en todas las semanas"
+                : `Semana del ${weekLabel(semana)}`}
+            </p>
           </div>
           {isPastWeek ? (
             <span className="inline-flex items-center rounded-full border border-warn/25 bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">
