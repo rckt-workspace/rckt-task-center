@@ -79,16 +79,19 @@ function Index() {
   const [puntoOpen, setPuntoOpen] = useState(false);
   const [editingPunto, setEditingPunto] = useState<AttentionPoint | null>(null);
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
+  const [historico, setHistorico] = useState(false);
 
   const user = store.user;
   const isCoord = user === COORDINADORA;
-  const isPastWeek = semana < currentWeekISO();
+  const isPastWeek = !historico && semana < currentWeekISO();
 
-  /** Todas las tareas de la semana visibles para la identidad actual (sin filtros). */
+  /** Tareas visibles para la identidad actual (semana seleccionada o histórico completo). */
   const scopeTasks = useMemo(() => {
-    const list = store.data.tasks.filter((t) => t.semana === semana);
+    const list = historico
+      ? store.data.tasks
+      : store.data.tasks.filter((t) => t.semana === semana);
     return isCoord ? list : list.filter((t) => t.colaborador === user);
-  }, [store.data.tasks, semana, isCoord, user]);
+  }, [store.data.tasks, semana, isCoord, user, historico]);
 
   const weekTasks = useMemo(() => {
     let list = scopeTasks;
