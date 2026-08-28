@@ -126,6 +126,13 @@ function Index() {
         .reverse(),
     [store.data.semanas, store.data.tasks, current],
   );
+  const weekLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        availableWeeks.map((w) => [w, w === current ? `${weekLabel(w)} · Actual` : weekLabel(w)]),
+      ),
+    [availableWeeks, current],
+  );
   const hasFilters =
     semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
 
