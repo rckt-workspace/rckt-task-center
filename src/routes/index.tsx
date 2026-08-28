@@ -173,6 +173,7 @@ function Index() {
   };
 
   const clearFilters = () => {
+    setHistorico(false);
     setSemana(currentWeekISO());
     setFColab(ALL);
     setFCliente(ALL);
