@@ -123,7 +123,12 @@ function Index() {
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
   const hasFilters =
-    semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
+    historico ||
+    semana !== current ||
+    fColab !== ALL ||
+    fCliente !== ALL ||
+    fArea !== ALL ||
+    fEstado !== ALL;
 
   if (!store.hydrated) {
     return <div className="min-h-screen" />;
