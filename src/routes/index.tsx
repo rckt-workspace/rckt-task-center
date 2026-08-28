@@ -118,8 +118,16 @@ function Index() {
   }, [store.data.tasks, isCoord, user]);
 
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
+  const current = currentWeekISO();
+  const availableWeeks = useMemo(
+    () =>
+      [...new Set([...store.data.semanas, ...store.data.tasks.map((t) => t.semana), current])]
+        .sort()
+        .reverse(),
+    [store.data.semanas, store.data.tasks, current],
+  );
   const hasFilters =
-    fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
+    semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
 
   if (!store.hydrated) {
     return <div className="min-h-screen" />;
