@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, CalendarPlus, Filter, Plus, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, CalendarPlus, Filter, History, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
