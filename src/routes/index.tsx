@@ -119,20 +119,6 @@ function Index() {
 
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
-  const availableWeeks = useMemo(
-    () =>
-      [...new Set([...store.data.semanas, ...store.data.tasks.map((t) => t.semana), current])]
-        .sort()
-        .reverse(),
-    [store.data.semanas, store.data.tasks, current],
-  );
-  const weekLabels = useMemo(
-    () =>
-      Object.fromEntries(
-        availableWeeks.map((w) => [w, w === current ? `${weekLabel(w)} · Actual` : weekLabel(w)]),
-      ),
-    [availableWeeks, current],
-  );
   const hasFilters =
     semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
 
@@ -258,8 +244,10 @@ function Index() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="sr-only">Resumen de la semana</h2>
           <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-lg font-semibold">
+              Semana {semana === current ? "actual" : "seleccionada"}
+            </h2>
             <p className="text-sm text-muted-foreground">Semana del {weekLabel(semana)}</p>
             {isPastWeek ? (
               <span className="inline-flex items-center rounded-full border border-warn/25 bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">
@@ -310,14 +298,7 @@ function Index() {
         {isCoord ? (
           <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-panel">
             <Filter className="size-4 text-muted-foreground" />
-            <FilterSelect
-              value={semana}
-              onChange={setSemana}
-              placeholder="Semana"
-              options={availableWeeks}
-              labels={weekLabels}
-              showAll={false}
-            />
+            <WeekPicker value={semana} onChange={setSemana} className="w-auto" />
             <FilterSelect
               value={fColab}
               onChange={setFColab}
