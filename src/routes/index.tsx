@@ -329,7 +329,23 @@ function Index() {
         {isCoord ? (
           <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-panel">
             <Filter className="size-4 text-muted-foreground" />
-            <WeekPicker value={semana} onChange={setSemana} className="w-auto" />
+            <WeekPicker
+              value={semana}
+              onChange={(v) => {
+                setHistorico(false);
+                setSemana(v);
+              }}
+              className="w-auto"
+            />
+            <Button
+              variant={historico ? "default" : "outline"}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setHistorico((h) => !h)}
+            >
+              <History className="size-3.5" />
+              Histórico
+            </Button>
             <FilterSelect
               value={fColab}
               onChange={setFColab}
