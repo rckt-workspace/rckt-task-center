@@ -399,11 +399,16 @@ function Index() {
 
         <section>
           <h2 className="mb-3 text-base font-semibold">
-            {isCoord ? "Todas las tareas" : "Mis tareas"}
+            {isCoord
+              ? historico
+                ? "Todas las tareas (histórico)"
+                : "Todas las tareas"
+              : "Mis tareas"}
           </h2>
           <TaskTable
             tasks={weekTasks}
             showColaborador={isCoord}
+            showSemana={historico}
             onEdit={(t) => {
               setEditing(t);
               setDialogOpen(true);
