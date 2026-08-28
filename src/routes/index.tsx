@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CalendarPlus, Filter, Plus, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, CalendarPlus, Filter, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -319,6 +319,29 @@ function Index() {
                 Limpiar filtros
               </Button>
             ) : null}
+          </section>
+        ) : null}
+
+        {!isCoord && backlogTasks.length > 0 ? (
+          <section className="rounded-xl border border-warn/40 bg-warn-soft p-4 shadow-panel">
+            <div className="mb-3 flex items-center gap-2">
+              <AlertTriangle className="size-4 text-warn" />
+              <h2 className="text-base font-semibold text-warn">
+                Tareas sin cerrar de semanas anteriores ({backlogTasks.length})
+              </h2>
+            </div>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Estas tareas siguen pendientes o en curso. Actualízalas para sacarlas de esta lista.
+            </p>
+            <TaskTable
+              tasks={backlogTasks}
+              showColaborador={false}
+              showSemana
+              onEdit={(t) => {
+                setEditing(t);
+                setDialogOpen(true);
+              }}
+            />
           </section>
         ) : null}
 
