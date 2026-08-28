@@ -29,6 +29,7 @@ import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
+import { CollaboratorHistory } from "@/components/rckt/CollaboratorHistory";
 import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import {

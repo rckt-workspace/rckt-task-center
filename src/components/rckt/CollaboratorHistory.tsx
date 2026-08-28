@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { isOverdue, weekLabel } from "@/lib/rckt/dates";
+import { weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 import { computeStats } from "./StatsBar";
 import { cn } from "@/lib/utils";
@@ -86,9 +86,7 @@ export function CollaboratorHistory({ tasks }: { tasks: Task[] }) {
                     <td className="px-4 py-2.5 text-right text-success">{w.completadas}</td>
                     <td className="px-4 py-2.5 text-right text-info">{w.enCurso}</td>
                     <td className="px-4 py-2.5 text-right text-warn">{w.pendientes}</td>
-                    <td className="px-4 py-2.5 text-right text-overdue">
-                      {tasks.filter((t) => t.semana === w.semana && isOverdue(t.fechaLimite, t.estado)).length}
-                    </td>
+                    <td className="px-4 py-2.5 text-right text-overdue">{w.vencidas}</td>
                     <td className="px-4 py-2.5 text-right font-medium">{w.cumplimiento}%</td>
                   </tr>
                 ))}
