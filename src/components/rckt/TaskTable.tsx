@@ -9,18 +9,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
-import { formatCO, isOverdue } from "@/lib/rckt/dates";
+import { formatCO, isOverdue, weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
   tasks: Task[];
   showColaborador?: boolean | undefined;
+  showSemana?: boolean | undefined;
   onEdit: (task: Task) => void;
   onDelete?: ((task: Task) => void) | undefined;
 }
 
-export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: Props) {
+export function TaskTable({ tasks, showColaborador = false, showSemana = false, onEdit, onDelete }: Props) {
   if (tasks.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
@@ -37,6 +38,7 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
           <TableHeader>
             <TableRow className="bg-secondary/70 hover:bg-secondary/70">
               <TableHead className="w-[120px]">Estado</TableHead>
+              {showSemana ? <TableHead>Semana</TableHead> : null}
               {showColaborador ? <TableHead>Colaborador</TableHead> : null}
               <TableHead>Cliente</TableHead>
               <TableHead>Área</TableHead>
@@ -58,6 +60,11 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
                   <TableCell>
                     <EstadoBadge estado={t.estado} />
                   </TableCell>
+                  {showSemana ? (
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {weekLabel(t.semana)}
+                    </TableCell>
+                  ) : null}
                   {showColaborador ? (
                     <TableCell className="whitespace-nowrap">{t.colaborador}</TableCell>
                   ) : null}
@@ -144,6 +151,7 @@ export function TaskTable({ tasks, showColaborador = false, onEdit, onDelete }: 
               <p className="mt-1 text-sm text-muted-foreground">
                 {t.cliente} · {t.area}
                 {showColaborador ? ` · ${t.colaborador}` : ""}
+                {showSemana ? ` · Semana ${weekLabel(t.semana)}` : ""}
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
