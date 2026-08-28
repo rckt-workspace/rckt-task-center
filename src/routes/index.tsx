@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, CalendarPlus, Filter, Plus, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, CalendarPlus, Filter, History as HistoryIcon, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
-import { CollaboratorHistory } from "@/components/rckt/CollaboratorHistory";
+
 import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import {
@@ -79,16 +79,19 @@ function Index() {
   const [puntoOpen, setPuntoOpen] = useState(false);
   const [editingPunto, setEditingPunto] = useState<AttentionPoint | null>(null);
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
+  const [historico, setHistorico] = useState(false);
 
   const user = store.user;
   const isCoord = user === COORDINADORA;
-  const isPastWeek = semana < currentWeekISO();
+  const isPastWeek = !historico && semana < currentWeekISO();
 
-  /** Todas las tareas de la semana visibles para la identidad actual (sin filtros). */
+  /** Tareas visibles para la identidad actual (semana seleccionada o histórico completo). */
   const scopeTasks = useMemo(() => {
-    const list = store.data.tasks.filter((t) => t.semana === semana);
+    const list = historico
+      ? store.data.tasks
+      : store.data.tasks.filter((t) => t.semana === semana);
     return isCoord ? list : list.filter((t) => t.colaborador === user);
-  }, [store.data.tasks, semana, isCoord, user]);
+  }, [store.data.tasks, semana, isCoord, user, historico]);
 
   const weekTasks = useMemo(() => {
     let list = scopeTasks;
@@ -101,8 +104,8 @@ function Index() {
   }, [scopeTasks, isCoord, fColab, fCliente, fArea, fEstado]);
 
   const puntos = useMemo(
-    () => store.data.puntos.filter((p) => p.semana === semana),
-    [store.data.puntos, semana],
+    () => (historico ? store.data.puntos : store.data.puntos.filter((p) => p.semana === semana)),
+    [store.data.puntos, semana, historico],
   );
 
   /** Tareas abiertas (Pendiente/En curso) del colaborador en semanas anteriores a la actual. */
@@ -120,7 +123,12 @@ function Index() {
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
   const hasFilters =
-    semana !== current || fColab !== ALL || fCliente !== ALL || fArea !== ALL || fEstado !== ALL;
+    historico ||
+    semana !== current ||
+    fColab !== ALL ||
+    fCliente !== ALL ||
+    fArea !== ALL ||
+    fEstado !== ALL;
 
   if (!store.hydrated) {
     return <div className="min-h-screen" />;
@@ -165,6 +173,7 @@ function Index() {
   };
 
   const clearFilters = () => {
+    setHistorico(false);
     setSemana(currentWeekISO());
     setFColab(ALL);
     setFCliente(ALL);
@@ -197,8 +206,25 @@ function Index() {
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
         <section className="flex flex-wrap items-center gap-3">
-          <WeekPicker value={semana} onChange={setSemana} />
-          {semana !== currentWeekISO() ? (
+          <WeekPicker
+            value={semana}
+            onChange={(v) => {
+              setHistorico(false);
+              setSemana(v);
+            }}
+          />
+          {isCoord ? (
+            <Button
+              variant={historico ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+              onClick={() => setHistorico((h) => !h)}
+            >
+              <HistoryIcon className="size-3.5" />
+              {historico ? "Viendo histórico" : "Ver histórico"}
+            </Button>
+          ) : null}
+          {!historico && semana !== currentWeekISO() ? (
             <Button variant="ghost" size="sm" onClick={() => setSemana(currentWeekISO())}>
               Ir a semana actual
             </Button>
@@ -246,9 +272,15 @@ function Index() {
         <section className="space-y-3">
           <div>
             <h2 className="text-base font-semibold">
-              Semana {semana === current ? "actual" : "seleccionada"}
+              {historico
+                ? "Histórico acumulado"
+                : `Semana ${semana === current ? "actual" : "seleccionada"}`}
             </h2>
-            <p className="text-sm text-muted-foreground">Semana del {weekLabel(semana)}</p>
+            <p className="text-sm text-muted-foreground">
+              {historico
+                ? "Todas las tareas registradas en todas las semanas"
+                : `Semana del ${weekLabel(semana)}`}
+            </p>
           </div>
           {isPastWeek ? (
             <span className="inline-flex items-center rounded-full border border-warn/25 bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">
@@ -258,7 +290,6 @@ function Index() {
           <StatsBar tasks={weekTasks} />
         </section>
 
-        {isCoord ? <CollaboratorHistory tasks={store.data.tasks} /> : null}
 
         {isCoord ? (
           <section className="grid gap-4 lg:grid-cols-2">
@@ -298,7 +329,23 @@ function Index() {
         {isCoord ? (
           <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-panel">
             <Filter className="size-4 text-muted-foreground" />
-            <WeekPicker value={semana} onChange={setSemana} className="w-auto" />
+            <WeekPicker
+              value={semana}
+              onChange={(v) => {
+                setHistorico(false);
+                setSemana(v);
+              }}
+              className="w-auto"
+            />
+            <Button
+              variant={historico ? "default" : "outline"}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setHistorico((h) => !h)}
+            >
+              <HistoryIcon className="size-3.5" />
+              Histórico
+            </Button>
             <FilterSelect
               value={fColab}
               onChange={setFColab}
@@ -352,11 +399,16 @@ function Index() {
 
         <section>
           <h2 className="mb-3 text-base font-semibold">
-            {isCoord ? "Todas las tareas" : "Mis tareas"}
+            {isCoord
+              ? historico
+                ? "Todas las tareas (histórico)"
+                : "Todas las tareas"
+              : "Mis tareas"}
           </h2>
           <TaskTable
             tasks={weekTasks}
             showColaborador={isCoord}
+            showSemana={historico}
             onEdit={(t) => {
               setEditing(t);
               setDialogOpen(true);
