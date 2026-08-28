@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Task } from "@/lib/rckt/types";
 import { computeStats } from "./StatsBar";
 import { cn } from "@/lib/utils";
