@@ -74,30 +74,30 @@
 
 :root {
   --radius: 0.6rem;
-  /* Marfil claro #FAF7F0 */
-  --background: oklch(0.975 0.008 95);
-  /* Gris oscuro #3A3D44 (texto de cuerpo) */
-  --foreground: oklch(0.35 0.012 264);
-  --card: oklch(0.995 0.004 92);
-  /* Negro casi puro #111214 (títulos) */
-  --card-foreground: oklch(0.18 0.006 264);
-  --popover: oklch(0.995 0.004 92);
-  --popover-foreground: oklch(0.18 0.006 264);
-  /* Azul marino #1B2A4A */
-  --primary: oklch(0.3 0.062 262);
-  --primary-foreground: oklch(0.975 0.008 95);
-  --secondary: oklch(0.945 0.012 90);
-  --secondary-foreground: oklch(0.3 0.062 262);
-  --muted: oklch(0.945 0.012 90);
-  --muted-foreground: oklch(0.47 0.015 264);
-  --accent: oklch(0.935 0.018 262);
-  --accent-foreground: oklch(0.3 0.062 262);
+  /* Fondo marfil claro */
+  --background: #FAF7F0;
+  /* Texto principal, negro casi puro */
+  --foreground: #111214;
+  --card: #FDFBF6;
+  --card-foreground: #111214;
+  --popover: #FDFBF6;
+  --popover-foreground: #111214;
+  /* Azul marino — botones, header, acentos */
+  --primary: #1B2A4A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0EBE0;
+  --secondary-foreground: #1B2A4A;
+  --muted: #F0EBE0;
+  /* Texto secundario, gris oscuro */
+  --muted-foreground: #3A3D44;
+  --accent: #E8EAF1;
+  --accent-foreground: #1B2A4A;
   --destructive: oklch(0.5 0.14 25);
-  --destructive-foreground: oklch(0.975 0.008 95);
-  /* Gris muy claro #E5E1D8 */
-  --border: oklch(0.905 0.012 90);
-  --input: oklch(0.905 0.012 90);
-  --ring: oklch(0.3 0.062 262);
+  --destructive-foreground: #FFFFFF;
+  /* Bordes y separadores, gris muy claro */
+  --border: #E5E1D8;
+  --input: #E5E1D8;
+  --ring: #1B2A4A;
   /* Estados: verde / ámbar / rojo ajustados a la paleta */
   --success: oklch(0.42 0.075 162);
   --success-soft: oklch(0.945 0.03 162);
