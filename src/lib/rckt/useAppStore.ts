@@ -3,6 +3,10 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { mondayOf, fromISO, toISO, todayISO } from "./dates";
 import type { AppData, AttentionPoint, Perfil, Task } from "./types";
+import type { Database } from "@/integrations/supabase/types";
+
+type TaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
+type PointUpdate = Database["public"]["Tables"]["attention_points"]["Update"];
 
 const SEMANAS_KEY = "rckt.semanas.v1";
 
@@ -193,7 +197,7 @@ export function useAppStore() {
     async (id: string, patch: Partial<Task> & Partial<TaskInput>) => {
       const current = taskRows.find((t) => t.id === id);
       if (!current) return;
-      const update: Record<string, unknown> = {};
+      const update: TaskUpdate = {};
       if (patch.colaborador !== undefined) {
         const assigned = idOf(patch.colaborador);
         if (assigned) update["assigned_to"] = assigned;
@@ -270,7 +274,7 @@ export function useAppStore() {
       id: string,
       patch: { taskId?: string; tipo?: string; motivo?: string; cliente?: string; colaborador?: string },
     ) => {
-      const update: Record<string, unknown> = {};
+      const update: PointUpdate = {};
       if (patch.taskId !== undefined) update["task_id"] = patch.taskId;
       if (patch.tipo !== undefined) update["tipo"] = patch.tipo;
       if (patch.motivo !== undefined) update["motivo"] = patch.motivo;
