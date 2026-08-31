@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { mondayOf, fromISO, toISO, todayISO } from "./dates";
 import type { AppData, AttentionPoint, Perfil, Task } from "./types";
 import type { Database } from "@/integrations/supabase/types";
+import { notifyTaskAssigned } from "@/lib/notify.functions";
+
 
 type TaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
 type PointUpdate = Database["public"]["Tables"]["attention_points"]["Update"];
@@ -176,20 +178,33 @@ export function useAppStore() {
     async (semana: string, input: TaskInput) => {
       const assigned = idOf(input.colaborador);
       if (!assigned) throw new Error("Colaborador no encontrado");
-      const { error } = await supabase.from("tasks").insert({
-        semana: input.fechaLimite ? semanaDeFechaLimite(input.fechaLimite) : semana,
-        assigned_to: assigned,
-        area: input.area,
-        cliente: input.cliente,
-        tarea: input.tarea,
-        estado: input.estado,
-        fecha_limite: input.fechaLimite,
-        fecha_entrega: applyEstadoRules(null, input.estado, input.fechaEntrega),
-        observaciones: input.observaciones,
-      });
+      const { data: inserted, error } = await supabase
+        .from("tasks")
+        .insert({
+          semana: input.fechaLimite ? semanaDeFechaLimite(input.fechaLimite) : semana,
+          assigned_to: assigned,
+          area: input.area,
+          cliente: input.cliente,
+          tarea: input.tarea,
+          estado: input.estado,
+          fecha_limite: input.fechaLimite,
+          fecha_entrega: applyEstadoRules(null, input.estado, input.fechaEntrega),
+          observaciones: input.observaciones,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (inserted?.id) {
+        try {
+          const res = await notifyTaskAssigned({ data: { taskId: inserted.id } });
+          if (!res.sent) console.warn("Correo de asignación no enviado:", res.reason);
+        } catch (e) {
+          console.warn("Correo de asignación no enviado:", e);
+        }
+      }
       await refresh();
     },
+
     [idOf, refresh],
   );
 
