@@ -67,6 +67,10 @@
   --color-warn-soft: var(--warn-soft);
   --color-overdue: var(--overdue);
   --color-overdue-soft: var(--overdue-soft);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-soft: var(--brand-blue-soft);
+  --color-header: var(--header);
+  --color-header-foreground: var(--header-foreground);
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --shadow-panel: 0 1px 2px oklch(0.25 0.03 265 / 0.05);
