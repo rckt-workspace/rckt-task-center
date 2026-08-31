@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { bootstrapAdmin, needsBootstrap } from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +33,14 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bootstrap, setBootstrap] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const checkBootstrap = useServerFn(needsBootstrap);
+  const createFirstAdmin = useServerFn(bootstrapAdmin);
+
+  useEffect(() => {
+    checkBootstrap().then((r) => setBootstrap(r.needed)).catch(() => setBootstrap(false));
+  }, [checkBootstrap]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -42,6 +52,16 @@ function AuthPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    if (bootstrap) {
+      try {
+        await createFirstAdmin({ data: { email, password, fullName } });
+        setBootstrap(false);
+      } catch (err) {
+        setLoading(false);
+        setError(err instanceof Error ? err.message : "No se pudo crear la cuenta");
+        return;
+      }
+    }
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (signInError) {
@@ -63,6 +83,17 @@ function AuthPage() {
         </p>
 
         <form onSubmit={submit} className="mt-6 space-y-4 rounded-lg border border-border bg-card p-5 shadow-panel">
+          {bootstrap ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="fullName">Nombre completo</Label>
+              <Input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+          ) : null}
           <div className="space-y-1.5">
             <Label htmlFor="email">Correo</Label>
             <Input
@@ -79,6 +110,7 @@ function AuthPage() {
             <Input
               id="password"
               type="password"
+              minLength={8}
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -87,10 +119,12 @@ function AuthPage() {
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Ingresando…" : "Ingresar"}
+            {loading ? "Procesando…" : bootstrap ? "Crear cuenta de administradora" : "Ingresar"}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Las cuentas las crea la administradora. Si no tienes acceso, solicítalo a coordinación.
+            {bootstrap
+              ? "No hay cuentas todavía: esta primera cuenta será la administradora."
+              : "Las cuentas las crea la administradora. Si no tienes acceso, solicítalo a coordinación."}
           </p>
         </form>
       </div>
