@@ -82,22 +82,27 @@
   --card-foreground: #111214;
   --popover: #FDFBF6;
   --popover-foreground: #111214;
-  /* Azul marino — botones, header, acentos */
-  --primary: #1B2A4A;
+  /* Azul violeta oscuro — botones, header, acentos */
+  --primary: #372A6E;
   --primary-foreground: #FFFFFF;
   --secondary: #F0EBE0;
-  --secondary-foreground: #1B2A4A;
+  --secondary-foreground: #372A6E;
   --muted: #F0EBE0;
   /* Texto secundario, gris oscuro */
   --muted-foreground: #3A3D44;
-  --accent: #E8EAF1;
-  --accent-foreground: #1B2A4A;
+  --accent: #E7E9F5;
+  --accent-foreground: #2A4BA0;
   --destructive: oklch(0.5 0.14 25);
   --destructive-foreground: #FFFFFF;
-  /* Bordes y separadores, gris muy claro */
+  /* Bordes y separadores, gris claro cálido */
   --border: #E5E1D8;
   --input: #E5E1D8;
-  --ring: #1B2A4A;
+  --ring: #2A4BA0;
+  /* Marca secundaria (azul) */
+  --brand-blue: #2A4BA0;
+  --brand-blue-soft: #E7EBF7;
+  --header: #372A6E;
+  --header-foreground: #FFFFFF;
   /* Estados: verde / ámbar / rojo ajustados a la paleta */
   --success: oklch(0.42 0.075 162);
   --success-soft: oklch(0.945 0.03 162);
