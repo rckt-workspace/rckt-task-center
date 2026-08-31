@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
-import { AREAS, CLIENTES, COLABORADORES, ESTADOS } from "@/lib/rckt/types";
+import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
 import type { TaskInput } from "@/lib/rckt/useAppStore";
@@ -34,11 +34,12 @@ interface Props {
   canEditAll: boolean;
   task?: Task | null | undefined;
   defaultColaborador?: Colaborador | undefined;
+  colaboradores?: string[] | undefined;
   onSubmit: (values: TaskInput) => void;
 }
 
 const emptyValues = (colaborador?: Colaborador): TaskInput => ({
-  colaborador: colaborador ?? COLABORADORES[0],
+  colaborador: colaborador ?? "",
   area: AREAS[0],
   cliente: CLIENTES[0],
   tarea: "",
@@ -55,6 +56,7 @@ export function TaskDialog({
   canEditAll,
   task,
   defaultColaborador,
+  colaboradores = [],
   onSubmit,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
@@ -125,7 +127,7 @@ export function TaskDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {COLABORADORES.map((c) => (
+                {colaboradores.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
