@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { mondayOf, fromISO, toISO, todayISO } from "./dates";
 import type { AppData, AttentionPoint, Perfil, Task } from "./types";
 import type { Database } from "@/integrations/supabase/types";
+import { notifyTaskAssigned } from "@/lib/notify.functions";
+
 
 type TaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
 type PointUpdate = Database["public"]["Tables"]["attention_points"]["Update"];
