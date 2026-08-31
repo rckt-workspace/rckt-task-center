@@ -25,20 +25,30 @@ export const ESTADOS = ["Completada", "En curso", "Pendiente"] as const;
 
 export const TIPOS_ATENCION = ["Decisión CEO", "Pendiente cliente", "En gestión"] as const;
 
-export type Colaborador = (typeof COLABORADORES)[number];
-export type Cliente = (typeof CLIENTES)[number];
-export type Area = (typeof AREAS)[number];
+export type Colaborador = string;
+export type Cliente = string;
+export type Area = string;
 export type Estado = (typeof ESTADOS)[number];
 export type TipoAtencion = (typeof TIPOS_ATENCION)[number];
 
-/** Identidad activa: "Coordinadora" o el nombre de un colaborador. */
 export const COORDINADORA = "Coordinadora";
-export type Identidad = typeof COORDINADORA | Colaborador;
+export type Identidad = string;
+
+export type Rol = "admin" | "colaborador";
+
+export interface Perfil {
+  id: string;
+  nombre: string;
+  email: string;
+}
 
 export interface Task {
   id: string;
   /** Lunes de la semana, formato ISO yyyy-MM-dd */
   semana: string;
+  /** uuid del perfil asignado */
+  assignedTo: string;
+  /** nombre visible del perfil asignado */
   colaborador: Colaborador;
   area: Area;
   cliente: Cliente;
@@ -55,11 +65,10 @@ export interface Task {
 
 export interface AttentionPoint {
   id: string;
-  /** Lunes de la semana, formato ISO yyyy-MM-dd */
   semana: string;
   cliente: Cliente;
+  assignedTo: string;
   colaborador: Colaborador;
-  /** id de la tarea afectada */
   taskId: string;
   tipo: TipoAtencion;
   motivo: string;
@@ -69,7 +78,7 @@ export interface AttentionPoint {
 
 export interface AppData {
   tasks: Task[];
-  /** Semanas creadas manualmente (lunes ISO) */
+  /** Semanas abiertas manualmente (lunes ISO) */
   semanas: string[];
   puntos: AttentionPoint[];
 }

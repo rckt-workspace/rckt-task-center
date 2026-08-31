@@ -14,16 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attention_points: {
+        Row: {
+          assigned_to: string
+          cliente: string
+          created_at: string
+          id: string
+          motivo: string
+          semana: string
+          task_id: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to: string
+          cliente: string
+          created_at?: string
+          id?: string
+          motivo?: string
+          semana: string
+          task_id?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string
+          cliente?: string
+          created_at?: string
+          id?: string
+          motivo?: string
+          semana?: string
+          task_id?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attention_points_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attention_points_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          area: string
+          assigned_to: string
+          cliente: string
+          created_at: string
+          estado: string
+          fecha_entrega: string | null
+          fecha_limite: string
+          id: string
+          observaciones: string
+          semana: string
+          tarea: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          assigned_to: string
+          cliente: string
+          created_at?: string
+          estado?: string
+          fecha_entrega?: string | null
+          fecha_limite: string
+          id?: string
+          observaciones?: string
+          semana: string
+          tarea: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          assigned_to?: string
+          cliente?: string
+          created_at?: string
+          estado?: string
+          fecha_entrega?: string | null
+          fecha_limite?: string
+          id?: string
+          observaciones?: string
+          semana?: string
+          tarea?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "colaborador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +304,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "colaborador"],
+    },
   },
 } as const
