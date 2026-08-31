@@ -188,34 +188,47 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-header bg-header text-header-foreground">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 px-4 py-4 sm:px-6">
           <div className="mr-auto">
-            <p className="font-display text-[11px] font-semibold tracking-[0.2em] text-accent-foreground uppercase">
+            <p className="font-display text-[11px] font-semibold tracking-[0.2em] text-header-foreground/70 uppercase">
               RCKT
             </p>
-            <h1 className="text-lg font-semibold">Centro de Control Semanal</h1>
+            <h1 className="text-lg font-semibold text-header-foreground">
+              Centro de Control Semanal
+            </h1>
           </div>
           <div className="text-right">
             <p className="text-sm font-medium">{nombre}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-header-foreground/70">
               {isCoord ? "Administradora" : "Colaborador"}
             </p>
           </div>
           {isCoord ? (
-            <Button variant="outline" size="sm" asChild className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-2 border-header-foreground/30 bg-transparent text-header-foreground hover:bg-header-foreground/15 hover:text-header-foreground"
+            >
               <Link to="/admin">
                 <Users className="size-3.5" />
                 Usuarios
               </Link>
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={signOut}
+            className="gap-2 border-header-foreground/30 bg-transparent text-header-foreground hover:bg-header-foreground/15 hover:text-header-foreground"
+          >
             <LogOut className="size-3.5" />
             Cerrar sesión
           </Button>
         </div>
       </header>
+
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
         <section className="flex flex-wrap items-center gap-3">

@@ -93,17 +93,23 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-header bg-header text-header-foreground">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4 sm:px-6">
-          <Button variant="ghost" size="sm" asChild className="gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="gap-2 text-header-foreground hover:bg-header-foreground/15 hover:text-header-foreground"
+          >
             <Link to="/dashboard">
               <ArrowLeft className="size-4" />
               Panel
             </Link>
           </Button>
-          <h1 className="text-lg font-semibold">Usuarios del equipo</h1>
+          <h1 className="text-lg font-semibold text-header-foreground">Usuarios del equipo</h1>
         </div>
       </header>
+
 
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-6 sm:px-6">
         <form
