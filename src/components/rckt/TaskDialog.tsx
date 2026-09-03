@@ -95,7 +95,8 @@ export function TaskDialog({
   }, [recording]);
 
   const stopRecording = () => {
-    recorderRef.current?.stop();
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") rec.stop();
   };
 
   const startRecording = async () => {
@@ -119,14 +120,17 @@ export function TaskDialog({
         const type = rec.mimeType || "audio/webm";
         const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
         const blob = new Blob(chunksRef.current, { type });
-        if (blob.size > 0) {
-          const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
-          const file = new File([blob], `nota-de-voz-${stamp}.${ext}`, { type });
-          setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, file] }));
-        }
-        setRecording(false);
-        setRecSeconds(0);
         recorderRef.current = null;
+        // Defer state updates so React no reconcilia mientras el evento nativo sigue despachándose
+        window.setTimeout(() => {
+          if (blob.size > 0) {
+            const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+            const file = new File([blob], `nota-de-voz-${stamp}.${ext}`, { type });
+            setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, file] }));
+          }
+          setRecording(false);
+          setRecSeconds(0);
+        }, 0);
       };
       recorderRef.current = rec;
       rec.start();
@@ -490,18 +494,18 @@ export function TaskDialog({
                 }}
               />
               <div className="flex flex-wrap items-center gap-2">
-                {recording ? (
-                  <Button type="button" variant="destructive" size="sm" className="gap-2" onClick={stopRecording}>
-                    <Square className="size-3.5" />
-                    Detener ({String(Math.floor(recSeconds / 60)).padStart(2, "0")}:
-                    {String(recSeconds % 60).padStart(2, "0")})
-                  </Button>
-                ) : (
-                  <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => void startRecording()}>
-                    <Mic className="size-3.5" />
-                    Grabar audio
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant={recording ? "destructive" : "outline"}
+                  size="sm"
+                  className="gap-2"
+                  onClick={recording ? stopRecording : () => void startRecording()}
+                >
+                  {recording ? <Square className="size-3.5" /> : <Mic className="size-3.5" />}
+                  {recording
+                    ? `Detener (${String(Math.floor(recSeconds / 60)).padStart(2, "0")}:${String(recSeconds % 60).padStart(2, "0")})`
+                    : "Grabar audio"}
+                </Button>
                 <Button
                   type="button"
                   variant="ghost"
