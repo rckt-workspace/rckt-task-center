@@ -68,26 +68,32 @@ export type Database = {
       profiles: {
         Row: {
           cargo: string
+          comments_seen_at: string | null
           created_at: string
           email: string
           full_name: string
           id: string
+          tasks_seen_at: string | null
           updated_at: string
         }
         Insert: {
           cargo?: string
+          comments_seen_at?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id: string
+          tasks_seen_at?: string | null
           updated_at?: string
         }
         Update: {
           cargo?: string
+          comments_seen_at?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: string
+          tasks_seen_at?: string | null
           updated_at?: string
         }
         Relationships: []
