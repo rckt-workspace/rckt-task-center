@@ -170,6 +170,12 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   {t.observaciones}
                 </p>
               ) : null}
+              {t.adjuntos.length > 0 || t.enlaces.length > 0 ? (
+                <div className="mt-3 border-t border-border pt-2">
+                  <p className="mb-1 text-xs text-muted-foreground">Adjuntos y enlaces</p>
+                  <TaskAttachments adjuntos={t.adjuntos} enlaces={t.enlaces} />
+                </div>
+              ) : null}
             </article>
           );
         })}
