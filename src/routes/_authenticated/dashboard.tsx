@@ -146,16 +146,20 @@ function Dashboard() {
   }
 
   const handleSubmit = async (values: TaskInput) => {
+    const uploading = values.nuevosArchivos.length;
+    const loadingId = uploading
+      ? toast.loading(`Subiendo ${uploading} archivo${uploading === 1 ? "" : "s"}…`)
+      : undefined;
     try {
       if (editing) {
         await store.updateTask(editing.id, values);
-        toast.success("Tarea actualizada");
+        toast.success("Tarea actualizada", { id: loadingId });
       } else {
         await store.createTask(semana, values);
-        toast.success("Tarea creada");
+        toast.success("Tarea creada", { id: loadingId });
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea");
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea", { id: loadingId });
     }
     setEditing(null);
   };
