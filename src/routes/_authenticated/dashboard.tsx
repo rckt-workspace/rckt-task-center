@@ -153,13 +153,13 @@ function Dashboard() {
     try {
       if (editing) {
         await store.updateTask(editing.id, values);
-        toast.success("Tarea actualizada", { id: loadingId });
+        toast.success("Tarea actualizada", ...(loadingId !== undefined ? [{ id: loadingId }] : []));
       } else {
         await store.createTask(semana, values);
-        toast.success("Tarea creada", { id: loadingId });
+        toast.success("Tarea creada", ...(loadingId !== undefined ? [{ id: loadingId }] : []));
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea", { id: loadingId });
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea", ...(loadingId !== undefined ? [{ id: loadingId }] : []));
     }
     setEditing(null);
   };
