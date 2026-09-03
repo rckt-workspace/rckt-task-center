@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN cargo text NOT NULL DEFAULT '';

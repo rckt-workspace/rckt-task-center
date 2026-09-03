@@ -67,6 +67,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          cargo: string
           created_at: string
           email: string
           full_name: string
@@ -74,6 +75,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cargo?: string
           created_at?: string
           email?: string
           full_name?: string
@@ -81,6 +83,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cargo?: string
           created_at?: string
           email?: string
           full_name?: string
