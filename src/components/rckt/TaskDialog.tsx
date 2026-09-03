@@ -143,7 +143,8 @@ export function TaskDialog({
 
   // Detener grabación si se cierra el diálogo
   useEffect(() => {
-    if (!open && recorderRef.current) recorderRef.current.stop();
+    const rec = recorderRef.current;
+    if (!open && rec && rec.state !== "inactive") rec.stop();
   }, [open]);
 
   useEffect(() => {
@@ -501,10 +502,13 @@ export function TaskDialog({
                   className="gap-2"
                   onClick={recording ? stopRecording : () => void startRecording()}
                 >
-                  {recording ? <Square className="size-3.5" /> : <Mic className="size-3.5" />}
-                  {recording
-                    ? `Detener (${String(Math.floor(recSeconds / 60)).padStart(2, "0")}:${String(recSeconds % 60).padStart(2, "0")})`
-                    : "Grabar audio"}
+                  <Mic className={recording ? "hidden" : "size-3.5"} aria-hidden="true" />
+                  <Square className={recording ? "size-3.5" : "hidden"} aria-hidden="true" />
+                  <span className={recording ? "hidden" : undefined}>Grabar audio</span>
+                  <span className={recording ? undefined : "hidden"}>
+                    Detener (<span>{String(Math.floor(recSeconds / 60)).padStart(2, "0")}</span>:
+                    <span>{String(recSeconds % 60).padStart(2, "0")}</span>)
+                  </span>
                 </Button>
                 <Button
                   type="button"
@@ -517,12 +521,17 @@ export function TaskDialog({
                   <Upload className="size-3.5" />
                   Subir audio
                 </Button>
-                {recording ? (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
-                    <span className="size-2 animate-pulse rounded-full bg-destructive" />
-                    Grabando…
-                  </span>
-                ) : null}
+                <span
+                  className={
+                    recording
+                      ? "inline-flex items-center gap-1.5 text-xs text-destructive"
+                      : "hidden"
+                  }
+                  aria-live="polite"
+                >
+                  <span className="size-2 animate-pulse rounded-full bg-destructive" />
+                  <span>Grabando…</span>
+                </span>
               </div>
               <p className="text-xs text-muted-foreground">
                 Explica de viva voz en qué consiste la tarea. El audio quedará en los adjuntos y el colaborador podrá
