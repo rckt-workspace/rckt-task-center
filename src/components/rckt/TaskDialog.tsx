@@ -49,6 +49,16 @@ interface Props {
   onSubmit: (values: TaskInput) => void;
 }
 
+/** Previsualización con <audio> de un archivo de audio recién seleccionado/grabado (aún no subido). */
+function PendingAudioPreview({ file }: { file: File }) {
+  const url = useMemo(() => URL.createObjectURL(file), [file]);
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <audio controls preload="metadata" src={url} className="h-8 w-full min-w-40 max-w-xs" />
+  );
+}
+
 const emptyValues = (colaborador?: Colaborador): TaskInput => ({
   colaborador: colaborador ?? "",
   area: AREAS[0],
