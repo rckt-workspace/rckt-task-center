@@ -99,7 +99,10 @@ async function uploadAttachments(taskId: string, files: File[], userId: string |
     const path = `${taskId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
     const { error: upErr } = await supabase.storage
       .from(ATTACHMENTS_BUCKET)
-      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+      .upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
     if (upErr) throw new Error(`No se pudo subir "${file.name}": ${upErr.message}`);
     const { error: rowErr } = await supabase.from("task_attachments").insert({
       task_id: taskId,
