@@ -41,7 +41,7 @@ import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
 import { supabase } from "@/integrations/supabase/client";
 
-import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
+import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
 import {
   exportMyTasksExcel,
   exportMyTasksPDF,
@@ -131,6 +131,13 @@ function Dashboard() {
       .sort((a, b) => (a.semana < b.semana ? -1 : 1));
   }, [store.data.tasks, isCoord]);
 
+  const upcomingTasks = useMemo(() => {
+    if (isCoord || historico) return [];
+    return store.data.tasks
+      .filter((t) => t.semana > semana && t.estado !== "Completada")
+      .sort((a, b) => (a.semana < b.semana ? -1 : 1));
+  }, [store.data.tasks, isCoord, historico, semana]);
+
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
   const hasFilters =
@@ -152,13 +159,22 @@ function Dashboard() {
         ? { id: toast.loading(`Subiendo ${uploading} archivo${uploading === 1 ? "" : "s"}…`) }
         : {};
     try {
+      const targetWeek = values.fechaLimite ? semanaDeFechaLimite(values.fechaLimite) : semana;
+      const movesWeek = !historico && targetWeek !== semana;
       if (editing) {
         await store.updateTask(editing.id, values);
-        toast.success("Tarea actualizada", toastOpts);
+        toast.success(
+          movesWeek ? `Tarea actualizada · se movió a la semana del ${weekLabel(targetWeek)}` : "Tarea actualizada",
+          toastOpts,
+        );
       } else {
         await store.createTask(semana, values);
-        toast.success("Tarea creada", toastOpts);
+        toast.success(
+          movesWeek ? `Tarea creada en la semana del ${weekLabel(targetWeek)}` : "Tarea creada",
+          toastOpts,
+        );
       }
+      if (movesWeek) setSemana(targetWeek);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea", toastOpts);
     }
@@ -517,6 +533,26 @@ function Dashboard() {
             onDelete={isCoord ? (t) => setDeleting(t) : undefined}
           />
         </section>
+
+        {!isCoord && upcomingTasks.length > 0 ? (
+          <section>
+            <h2 className="mb-1 text-base font-semibold">
+              Próximas semanas ({upcomingTasks.length})
+            </h2>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Tareas asignadas con fecha límite en semanas posteriores a la que estás viendo.
+            </p>
+            <TaskTable
+              tasks={upcomingTasks}
+              showColaborador={false}
+              showSemana
+              onEdit={(t) => {
+                setEditing(t);
+                setDialogOpen(true);
+              }}
+            />
+          </section>
+        ) : null}
       </main>
 
       <TaskDialog
