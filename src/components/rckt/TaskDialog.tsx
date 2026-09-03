@@ -123,7 +123,15 @@ export function TaskDialog({
             <Label>Colaborador</Label>
             <Select
               value={v.colaborador}
-              onValueChange={(x) => setV({ ...v, colaborador: x as Colaborador })}
+              onValueChange={(x) => {
+                const cargo = cargos?.[x];
+                setV((prev) => ({
+                  ...prev,
+                  colaborador: x as Colaborador,
+                  // Sincroniza el área con el cargo del colaborador seleccionado
+                  area: cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : prev.area,
+                }));
+              }}
               disabled={!canEditAll}
             >
               <SelectTrigger>
@@ -137,6 +145,11 @@ export function TaskDialog({
                 ))}
               </SelectContent>
             </Select>
+            {cargos?.[v.colaborador] ? (
+              <p className="text-xs text-muted-foreground">
+                El área se completa con el cargo de esta persona.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
