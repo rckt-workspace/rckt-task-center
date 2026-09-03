@@ -152,13 +152,22 @@ function Dashboard() {
         ? { id: toast.loading(`Subiendo ${uploading} archivo${uploading === 1 ? "" : "s"}…`) }
         : {};
     try {
+      const targetWeek = values.fechaLimite ? semanaDeFechaLimite(values.fechaLimite) : semana;
+      const movesWeek = !historico && targetWeek !== semana;
       if (editing) {
         await store.updateTask(editing.id, values);
-        toast.success("Tarea actualizada", toastOpts);
+        toast.success(
+          movesWeek ? `Tarea actualizada · se movió a la semana del ${weekLabel(targetWeek)}` : "Tarea actualizada",
+          toastOpts,
+        );
       } else {
         await store.createTask(semana, values);
-        toast.success("Tarea creada", toastOpts);
+        toast.success(
+          movesWeek ? `Tarea creada en la semana del ${weekLabel(targetWeek)}` : "Tarea creada",
+          toastOpts,
+        );
       }
+      if (movesWeek) setSemana(targetWeek);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo guardar la tarea", toastOpts);
     }
