@@ -1,0 +1,1 @@
+ALTER TABLE public.task_comments ADD COLUMN author_name text NOT NULL DEFAULT '';

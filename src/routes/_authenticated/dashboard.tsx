@@ -531,6 +531,7 @@ function Dashboard() {
         colaboradores={colaboradores}
         cargos={cargos}
         defaultColaborador={isCoord ? undefined : nombre}
+        currentUserName={nombre}
         onSubmit={handleSubmit}
       />
 

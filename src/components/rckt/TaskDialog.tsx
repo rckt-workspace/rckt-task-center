@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
 import { fileIcon, formatSize } from "./TaskAttachments";
+import { TaskComments } from "./TaskComments";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
@@ -42,6 +43,8 @@ interface Props {
   colaboradores?: string[] | undefined;
   /** Mapa nombre → cargo para mostrar el cargo junto al nombre */
   cargos?: Record<string, string> | undefined;
+  /** Nombre del usuario actual, usado como autor en comentarios */
+  currentUserName?: string | undefined;
   onSubmit: (values: TaskInput) => void;
 }
 
@@ -69,6 +72,7 @@ export function TaskDialog({
   defaultColaborador,
   colaboradores = [],
   cargos,
+  currentUserName,
   onSubmit,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
@@ -579,6 +583,11 @@ export function TaskDialog({
               </ul>
             ) : null}
           </div>
+
+          {/* Comentarios (solo tareas existentes) */}
+          {mode === "edit" && task ? (
+            <TaskComments taskId={task.id} authorName={currentUserName ?? ""} isAdmin={canEditAll} />
+          ) : null}
         </div>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
