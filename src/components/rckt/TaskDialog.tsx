@@ -436,11 +436,13 @@ export function TaskDialog({
               <ul className="divide-y divide-border rounded-md border border-border bg-background">
                 {existingAdjuntos.map((a) => {
                   const Icon = fileIcon(a.mime);
+                  const audio = isAudio(a.mime, a.name);
                   return (
-                    <li key={a.id} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <li key={a.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
                       <Icon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate">{a.name}</span>
                       <span className="text-xs text-muted-foreground">{formatSize(a.size)}</span>
+                      {audio ? <AudioPlayer a={a} /> : null}
                       <Button
                         type="button"
                         variant="ghost"
@@ -458,14 +460,16 @@ export function TaskDialog({
                 })}
                 {v.nuevosArchivos.map((f, i) => {
                   const Icon = fileIcon(f.type);
+                  const audio = isAudio(f.type, f.name);
                   return (
-                    <li key={`${f.name}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <li key={`${f.name}-${i}`} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
                       <Icon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate">{f.name}</span>
                       <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase">
                         Nuevo
                       </span>
                       <span className="text-xs text-muted-foreground">{formatSize(f.size)}</span>
+                      {audio ? <PendingAudioPreview file={f} /> : null}
                       <Button
                         type="button"
                         variant="ghost"
