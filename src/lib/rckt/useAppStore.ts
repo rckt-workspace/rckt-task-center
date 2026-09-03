@@ -312,11 +312,15 @@ export function useAppStore() {
 
   const deleteTask = useCallback(
     async (id: string) => {
+      const paths = attachmentRows.filter((a) => a.task_id === id).map((a) => a.path);
+      if (paths.length > 0) {
+        await supabase.storage.from(ATTACHMENTS_BUCKET).remove(paths);
+      }
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
       await refresh();
     },
-    [refresh],
+    [attachmentRows, refresh],
   );
 
   const addSemana = useCallback((mondayIso: string) => {
