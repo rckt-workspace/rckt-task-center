@@ -274,6 +274,41 @@ function AdminPage() {
           </Table>
         </section>
       </main>
+
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar cargo</DialogTitle>
+            <DialogDescription>
+              Cambia el cargo de {editing?.nombre}. El correo, la contraseña y el rol no se pueden
+              editar aquí.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label>Cargo</Label>
+            <Select value={editCargo} onValueChange={setEditCargo}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AREAS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void submitEdit()} disabled={savingEdit}>
+              {savingEdit ? "Guardando…" : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
