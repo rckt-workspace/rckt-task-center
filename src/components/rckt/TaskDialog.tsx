@@ -65,10 +65,15 @@ export function TaskDialog({
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
   const [error, setError] = useState<string | null>(null);
+  const [linkDraft, setLinkDraft] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setError(null);
+    setLinkDraft("");
+    setLinkError(null);
     const areaFromCargo = (nombre: string, fallback: Area): Area => {
       const cargo = cargos?.[nombre];
       return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
@@ -84,6 +89,9 @@ export function TaskDialog({
         horaLimite: task.horaLimite,
         fechaEntrega: task.fechaEntrega,
         observaciones: task.observaciones,
+        enlaces: [...task.enlaces],
+        nuevosArchivos: [],
+        eliminarAdjuntos: [],
       });
     } else {
       const base = emptyValues(defaultColaborador);
@@ -91,6 +99,28 @@ export function TaskDialog({
       setV(base);
     }
   }, [open, task, defaultColaborador, cargos]);
+
+  const existingAdjuntos = (task?.adjuntos ?? []).filter((a) => !v.eliminarAdjuntos.includes(a.id));
+
+  const addLink = () => {
+    let raw = linkDraft.trim();
+    if (!raw) return;
+    if (!/^https?:\/\//i.test(raw)) raw = `https://${raw}`;
+    try {
+      const u = new URL(raw);
+      if (!u.hostname.includes(".")) throw new Error();
+    } catch {
+      setLinkError("Ingresa una URL válida (ej. https://drive.google.com/…).");
+      return;
+    }
+    if (v.enlaces.includes(raw)) {
+      setLinkError("Ese enlace ya está agregado.");
+      return;
+    }
+    setV((prev) => ({ ...prev, enlaces: [...prev.enlaces, raw] }));
+    setLinkDraft("");
+    setLinkError(null);
+  };
 
   const setEstado = (estado: Estado) => {
     setV((prev) => ({
@@ -110,7 +140,14 @@ export function TaskDialog({
       setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
       return;
     }
-    onSubmit({ ...v, tarea: v.tarea.trim() });
+    // Si quedó un enlace escrito sin agregar, lo incluimos automáticamente
+    const enlaces = [...v.enlaces];
+    const pending = linkDraft.trim();
+    if (pending) {
+      const normalized = /^https?:\/\//i.test(pending) ? pending : `https://${pending}`;
+      if (!enlaces.includes(normalized)) enlaces.push(normalized);
+    }
+    onSubmit({ ...v, enlaces, tarea: v.tarea.trim() });
     onOpenChange(false);
   };
 
