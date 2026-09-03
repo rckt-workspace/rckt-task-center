@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { formatCO, sundayOfISO, toISO, weekLabel } from "@/lib/rckt/dates";
+import { formatFechaHora, sundayOfISO, toISO, weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 
 const NAVY: [number, number, number] = [55, 42, 110]; // #372A6E
@@ -22,8 +22,9 @@ interface ExportOptions {
 
 function rows(tasks: Task[], includeColaborador: boolean): string[][] {
   return tasks.map((t) => {
-    const base = [t.tarea, t.cliente, t.area, formatCO(t.fechaLimite), t.estado];
-    return includeColaborador ? [t.tarea, t.colaborador, t.cliente, t.area, formatCO(t.fechaLimite), t.estado] : base;
+    const limite = formatFechaHora(t.fechaLimite, t.horaLimite);
+    const base = [t.tarea, t.cliente, t.area, limite, t.estado];
+    return includeColaborador ? [t.tarea, t.colaborador, t.cliente, t.area, limite, t.estado] : base;
   });
 }
 
@@ -69,7 +70,7 @@ function exportExcel(tasks: Task[], mondayIso: string | null, opts: ExportOption
       Tarea: t.tarea,
       Cliente: t.cliente,
       "Área": t.area,
-      "Fecha límite": t.fechaLimite,
+      "Fecha límite": formatFechaHora(t.fechaLimite, t.horaLimite),
       Estado: t.estado,
     };
     return opts.includeColaborador ? { ...base, Colaborador: t.colaborador } : base;
