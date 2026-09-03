@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
 import { fileIcon, formatSize } from "./TaskAttachments";
+import { TaskComments } from "./TaskComments";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
