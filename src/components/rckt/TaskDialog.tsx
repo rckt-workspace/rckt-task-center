@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link2, Plus, Upload, X } from "lucide-react";
+import { Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -76,6 +76,66 @@ export function TaskDialog({
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const [recording, setRecording] = useState(false);
+  const [recSeconds, setRecSeconds] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = window.setInterval(() => setRecSeconds((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [recording]);
+
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+  };
+
+  const startRecording = async () => {
+    setAudioError(null);
+    if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setAudioError("Tu navegador no permite grabar audio. Sube un archivo de audio en su lugar.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find((m) =>
+        MediaRecorder.isTypeSupported(m),
+      );
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      chunksRef.current = [];
+      rec.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      rec.onstop = () => {
+        stream.getTracks().forEach((tr) => tr.stop());
+        const type = rec.mimeType || "audio/webm";
+        const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
+        const blob = new Blob(chunksRef.current, { type });
+        if (blob.size > 0) {
+          const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+          const file = new File([blob], `nota-de-voz-${stamp}.${ext}`, { type });
+          setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, file] }));
+        }
+        setRecording(false);
+        setRecSeconds(0);
+        recorderRef.current = null;
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecSeconds(0);
+      setRecording(true);
+    } catch {
+      setAudioError("No se pudo acceder al micrófono. Revisa los permisos del navegador.");
+    }
+  };
+
+  // Detener grabación si se cierra el diálogo
+  useEffect(() => {
+    if (!open && recorderRef.current) recorderRef.current.stop();
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -407,6 +467,61 @@ export function TaskDialog({
               </ul>
             ) : null}
           </div>
+
+          {/* Nota de voz */}
+          {canEditAll ? (
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Nota de voz</Label>
+              <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length)
+                    setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, ...files] }));
+                  e.target.value = "";
+                }}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                {recording ? (
+                  <Button type="button" variant="destructive" size="sm" className="gap-2" onClick={stopRecording}>
+                    <Square className="size-3.5" />
+                    Detener ({String(Math.floor(recSeconds / 60)).padStart(2, "0")}:
+                    {String(recSeconds % 60).padStart(2, "0")})
+                  </Button>
+                ) : (
+                  <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => void startRecording()}>
+                    <Mic className="size-3.5" />
+                    Grabar audio
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  disabled={recording}
+                  onClick={() => audioInputRef.current?.click()}
+                >
+                  <Upload className="size-3.5" />
+                  Subir audio
+                </Button>
+                {recording ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
+                    <span className="size-2 animate-pulse rounded-full bg-destructive" />
+                    Grabando…
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Explica de viva voz en qué consiste la tarea. El audio quedará en los adjuntos y el colaborador podrá
+                escucharlo en el detalle.
+              </p>
+              {audioError ? <p className="text-xs text-destructive">{audioError}</p> : null}
+            </div>
+          ) : null}
 
           {/* Enlaces */}
           <div className="space-y-2 sm:col-span-2">

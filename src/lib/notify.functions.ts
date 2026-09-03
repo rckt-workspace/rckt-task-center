@@ -58,6 +58,35 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
     const author = (people ?? []).find((p) => p.id === userId);
     if (!assignee?.email) return { sent: false, reason: "no_email" as const };
 
+    // Notas de voz adjuntas: enlace firmado (7 días) para escuchar/descargar
+    const { data: attachments } = await supabase
+      .from("task_attachments")
+      .select("name, path, mime")
+      .eq("task_id", data.taskId)
+      .order("created_at");
+    const audioRows = (attachments ?? []).filter(
+      (a) => a.mime.startsWith("audio/") || /\.(webm|m4a|mp3|ogg|wav|aac)$/i.test(a.name),
+    );
+    const audioLinks: { name: string; url: string }[] = [];
+    for (const a of audioRows) {
+      const { data: signed } = await supabase.storage
+        .from("task-attachments")
+        .createSignedUrl(a.path, 60 * 60 * 24 * 7);
+      if (signed?.signedUrl) audioLinks.push({ name: a.name, url: signed.signedUrl });
+    }
+    const audioBlock =
+      audioLinks.length > 0
+        ? `<div style="margin-top:16px;background:#FFFFFF;border:1px solid ${BORDER};border-radius:10px;padding:14px 16px;">
+        <div style="color:#111214;font-size:13px;font-weight:700;margin-bottom:8px;">🎙 Nota de voz de la coordinadora</div>
+        ${audioLinks
+          .map(
+            (l) => `<a href="${esc(l.url)}" style="display:inline-block;margin:4px 8px 4px 0;background:${NAVY};color:#FFFFFF;text-decoration:none;font-size:13px;font-weight:600;padding:9px 14px;border-radius:8px;">Escuchar audio</a>`,
+          )
+          .join("")}
+        <div style="color:${TEXT};font-size:11px;margin-top:8px;">El enlace abre o descarga el audio y es válido por 7 días. También puedes escucharlo en el detalle de la tarea.</div>
+      </div>`
+        : "";
+
     const html = `<!doctype html><html><body style="margin:0;padding:24px;background:${IVORY};font-family:Helvetica,Arial,sans-serif;">
   <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#FFFDF8;border:1px solid ${BORDER};border-radius:12px;overflow:hidden;">
     <tr><td style="background:${NAVY};padding:20px 24px;">
@@ -78,6 +107,7 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
           ${task.observaciones ? row("Detalle", task.observaciones) : ""}
         </table>
       </div>
+      ${audioBlock}
       <p style="margin:20px 0 0;color:${TEXT};font-size:12px;">Ingresa al Centro de Control Semanal para actualizar el estado de tu tarea.</p>
     </td></tr>
   </table>
