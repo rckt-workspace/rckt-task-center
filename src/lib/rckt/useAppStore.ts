@@ -27,6 +27,11 @@ export interface TaskInput {
   horaLimite: string | null;
   fechaEntrega: string | null;
   observaciones: string;
+  enlaces: string[];
+  /** Archivos nuevos a subir al guardar */
+  nuevosArchivos: File[];
+  /** IDs de adjuntos existentes a eliminar al guardar */
+  eliminarAdjuntos: string[];
 }
 
 /** Normaliza la fecha de entrega según las reglas de estado. */
@@ -51,8 +56,19 @@ interface TaskRow {
   hora_limite: string | null;
   fecha_entrega: string | null;
   observaciones: string;
+  enlaces: string[];
   created_at: string;
   updated_at: string;
+}
+
+interface AttachmentRow {
+  id: string;
+  task_id: string;
+  name: string;
+  path: string;
+  mime: string;
+  size: number;
+  created_at: string;
 }
 
 interface PointRow {
@@ -65,6 +81,53 @@ interface PointRow {
   motivo: string;
   created_at: string;
   updated_at: string;
+}
+
+export const ATTACHMENTS_BUCKET = "task-attachments";
+
+function safeFileName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "_")
+    .slice(-120);
+}
+
+/** Sube archivos al storage y registra los adjuntos de una tarea. */
+async function uploadAttachments(taskId: string, files: File[], userId: string | null) {
+  for (const file of files) {
+    const path = `${taskId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
+    const { error: upErr } = await supabase.storage
+      .from(ATTACHMENTS_BUCKET)
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    if (upErr) throw new Error(`No se pudo subir "${file.name}": ${upErr.message}`);
+    const { error: rowErr } = await supabase.from("task_attachments").insert({
+      task_id: taskId,
+      name: file.name,
+      path,
+      mime: file.type,
+      size: file.size,
+      uploaded_by: userId,
+    });
+    if (rowErr) throw rowErr;
+  }
+}
+
+async function removeAttachments(rows: AttachmentRow[], ids: string[]) {
+  const targets = rows.filter((r) => ids.includes(r.id));
+  if (targets.length === 0) return;
+  await supabase.storage.from(ATTACHMENTS_BUCKET).remove(targets.map((t) => t.path));
+  const { error } = await supabase.from("task_attachments").delete().in("id", ids);
+  if (error) throw error;
+}
+
+/** URL firmada temporal para abrir/descargar un adjunto. */
+export async function getAttachmentUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(ATTACHMENTS_BUCKET)
+    .createSignedUrl(path, 60 * 60);
+  if (error || !data) throw error ?? new Error("No se pudo generar el enlace");
+  return data.signedUrl;
 }
 
 function loadSemanas(): string[] {
