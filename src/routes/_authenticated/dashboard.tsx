@@ -138,6 +138,16 @@ function Dashboard() {
       .sort((a, b) => (a.semana < b.semana ? -1 : 1));
   }, [store.data.tasks, isCoord, historico, semana]);
 
+  const otherWeeks = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of store.data.tasks) {
+      if (t.semana !== semana) counts.set(t.semana, (counts.get(t.semana) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([s, count]) => ({ semana: s, count }))
+      .sort((a, b) => (a.semana < b.semana ? -1 : 1));
+  }, [store.data.tasks, semana]);
+
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
   const hasFilters =
