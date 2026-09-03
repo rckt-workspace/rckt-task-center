@@ -47,7 +47,7 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
               <TableHead className="min-w-[240px]">Tarea / Entregable</TableHead>
               <TableHead>Fecha límite</TableHead>
               <TableHead>Fecha de entrega</TableHead>
-              <TableHead className="min-w-[180px]">Observaciones</TableHead>
+              <TableHead className="min-w-[180px]">Descripción</TableHead>
               <TableHead className="min-w-[160px]">Adjuntos</TableHead>
               <TableHead className="w-[200px] text-right">Acción</TableHead>
             </TableRow>
