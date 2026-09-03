@@ -131,6 +131,13 @@ function Dashboard() {
       .sort((a, b) => (a.semana < b.semana ? -1 : 1));
   }, [store.data.tasks, isCoord]);
 
+  const upcomingTasks = useMemo(() => {
+    if (isCoord || historico) return [];
+    return store.data.tasks
+      .filter((t) => t.semana > semana && t.estado !== "Completada")
+      .sort((a, b) => (a.semana < b.semana ? -1 : 1));
+  }, [store.data.tasks, isCoord, historico, semana]);
+
   const abiertas = scopeTasks.filter((t) => t.estado !== "Completada").length;
   const current = currentWeekISO();
   const hasFilters =
