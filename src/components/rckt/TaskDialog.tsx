@@ -490,18 +490,18 @@ export function TaskDialog({
                 }}
               />
               <div className="flex flex-wrap items-center gap-2">
-                {recording ? (
-                  <Button type="button" variant="destructive" size="sm" className="gap-2" onClick={stopRecording}>
-                    <Square className="size-3.5" />
-                    Detener ({String(Math.floor(recSeconds / 60)).padStart(2, "0")}:
-                    {String(recSeconds % 60).padStart(2, "0")})
-                  </Button>
-                ) : (
-                  <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => void startRecording()}>
-                    <Mic className="size-3.5" />
-                    Grabar audio
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant={recording ? "destructive" : "outline"}
+                  size="sm"
+                  className="gap-2"
+                  onClick={recording ? stopRecording : () => void startRecording()}
+                >
+                  {recording ? <Square className="size-3.5" /> : <Mic className="size-3.5" />}
+                  {recording
+                    ? `Detener (${String(Math.floor(recSeconds / 60)).padStart(2, "0")}:${String(recSeconds % 60).padStart(2, "0")})`
+                    : "Grabar audio"}
+                </Button>
                 <Button
                   type="button"
                   variant="ghost"
