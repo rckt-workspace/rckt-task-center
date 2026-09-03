@@ -19,6 +19,7 @@ export const AREAS = [
   "Shopify & Frontend Developer",
   "Performance y campañas",
   "Performance Creative",
+  "Project Manager",
 ] as const;
 
 export const ESTADOS = ["Completada", "En curso", "Pendiente"] as const;
