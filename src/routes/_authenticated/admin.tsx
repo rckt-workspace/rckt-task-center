@@ -201,6 +201,21 @@ function AdminPage() {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1.5">
+            <Label>Cargo</Label>
+            <Select value={cargo} onValueChange={setCargo}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AREAS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="sm:col-span-2">
             <Button type="submit" className="gap-2" disabled={saving}>
               <UserPlus className="size-4" />
@@ -215,7 +230,8 @@ function AdminPage() {
               <TableRow className="bg-secondary/70 hover:bg-secondary/70">
                 <TableHead>Nombre</TableHead>
                 <TableHead>Correo</TableHead>
-                <TableHead className="w-[80px] text-right">Acción</TableHead>
+                <TableHead>Cargo</TableHead>
+                <TableHead className="w-[96px] text-right">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
