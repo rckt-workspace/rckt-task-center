@@ -68,10 +68,14 @@ export function TaskDialog({
   useEffect(() => {
     if (!open) return;
     setError(null);
+    const areaFromCargo = (nombre: string, fallback: Area): Area => {
+      const cargo = cargos?.[nombre];
+      return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
+    };
     if (task) {
       setV({
         colaborador: task.colaborador,
-        area: task.area,
+        area: areaFromCargo(task.colaborador, task.area),
         cliente: task.cliente,
         tarea: task.tarea,
         estado: task.estado,
@@ -80,9 +84,11 @@ export function TaskDialog({
         observaciones: task.observaciones,
       });
     } else {
-      setV(emptyValues(defaultColaborador));
+      const base = emptyValues(defaultColaborador);
+      base.area = areaFromCargo(base.colaborador, base.area);
+      setV(base);
     }
-  }, [open, task, defaultColaborador]);
+  }, [open, task, defaultColaborador, cargos]);
 
   const setEstado = (estado: Estado) => {
     setV((prev) => ({
@@ -123,7 +129,15 @@ export function TaskDialog({
             <Label>Colaborador</Label>
             <Select
               value={v.colaborador}
-              onValueChange={(x) => setV({ ...v, colaborador: x as Colaborador })}
+              onValueChange={(x) => {
+                const cargo = cargos?.[x];
+                setV((prev) => ({
+                  ...prev,
+                  colaborador: x as Colaborador,
+                  // Sincroniza el área con el cargo del colaborador seleccionado
+                  area: cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : prev.area,
+                }));
+              }}
               disabled={!canEditAll}
             >
               <SelectTrigger>
@@ -137,6 +151,11 @@ export function TaskDialog({
                 ))}
               </SelectContent>
             </Select>
+            {cargos?.[v.colaborador] ? (
+              <p className="text-xs text-muted-foreground">
+                El área se completa con el cargo de esta persona.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
