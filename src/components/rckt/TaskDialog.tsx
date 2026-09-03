@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
-import { fileIcon, formatSize } from "./TaskAttachments";
+import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
@@ -47,6 +47,16 @@ interface Props {
   /** Nombre del usuario actual, usado como autor en comentarios */
   currentUserName?: string | undefined;
   onSubmit: (values: TaskInput) => void;
+}
+
+/** Previsualización con <audio> de un archivo de audio recién seleccionado/grabado (aún no subido). */
+function PendingAudioPreview({ file }: { file: File }) {
+  const url = useMemo(() => URL.createObjectURL(file), [file]);
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <audio controls preload="metadata" src={url} className="h-8 w-full min-w-40 max-w-xs" />
+  );
 }
 
 const emptyValues = (colaborador?: Colaborador): TaskInput => ({
@@ -426,11 +436,13 @@ export function TaskDialog({
               <ul className="divide-y divide-border rounded-md border border-border bg-background">
                 {existingAdjuntos.map((a) => {
                   const Icon = fileIcon(a.mime);
+                  const audio = isAudio(a.mime, a.name);
                   return (
-                    <li key={a.id} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <li key={a.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
                       <Icon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate">{a.name}</span>
                       <span className="text-xs text-muted-foreground">{formatSize(a.size)}</span>
+                      {audio ? <AudioPlayer a={a} /> : null}
                       <Button
                         type="button"
                         variant="ghost"
@@ -448,14 +460,16 @@ export function TaskDialog({
                 })}
                 {v.nuevosArchivos.map((f, i) => {
                   const Icon = fileIcon(f.type);
+                  const audio = isAudio(f.type, f.name);
                   return (
-                    <li key={`${f.name}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <li key={`${f.name}-${i}`} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
                       <Icon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate">{f.name}</span>
                       <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase">
                         Nuevo
                       </span>
                       <span className="text-xs text-muted-foreground">{formatSize(f.size)}</span>
+                      {audio ? <PendingAudioPreview file={f} /> : null}
                       <Button
                         type="button"
                         variant="ghost"
