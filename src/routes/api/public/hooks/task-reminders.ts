@@ -1,5 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+
+/** Valida el token privado del cron (Authorization: Bearer <TASK_REMINDER_CRON_SECRET>). */
+async function authenticateCronRequest(request: Request): Promise<Response | null> {
+  const secret = process.env["TASK_REMINDER_CRON_SECRET"];
+  if (!secret) return new Response("Server configuration error", { status: 500 });
+  const match = /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "");
+  const token = match?.[1];
+  if (!token) return new Response("Unauthorized", { status: 401 });
+  const { createHash, timingSafeEqual } = await import("node:crypto");
+  const digest = (v: string) => createHash("sha256").update(v, "utf8").digest();
+  if (!timingSafeEqual(digest(token), digest(secret))) return new Response("Unauthorized", { status: 401 });
+  return null;
+}
 
 const NAVY = "#1B2A4A";
 const IVORY = "#FAF7F0";
