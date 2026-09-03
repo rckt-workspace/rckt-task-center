@@ -35,6 +35,8 @@ interface Props {
   task?: Task | null | undefined;
   defaultColaborador?: Colaborador | undefined;
   colaboradores?: string[] | undefined;
+  /** Mapa nombre → cargo para mostrar el cargo junto al nombre */
+  cargos?: Record<string, string> | undefined;
   onSubmit: (values: TaskInput) => void;
 }
 
@@ -57,6 +59,7 @@ export function TaskDialog({
   task,
   defaultColaborador,
   colaboradores = [],
+  cargos,
   onSubmit,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
@@ -129,7 +132,7 @@ export function TaskDialog({
               <SelectContent>
                 {colaboradores.map((c) => (
                   <SelectItem key={c} value={c}>
-                    {c}
+                    {cargos?.[c] ? `${c} — ${cargos[c]}` : c}
                   </SelectItem>
                 ))}
               </SelectContent>

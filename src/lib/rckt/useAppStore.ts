@@ -104,7 +104,7 @@ export function useAppStore() {
     }
     const [rolesRes, profilesRes, tasksRes, pointsRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase.from("profiles").select("id, full_name, email").order("full_name"),
+      supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
       supabase.from("tasks").select("*").order("fecha_limite"),
       supabase.from("attention_points").select("*").order("created_at"),
     ]);
@@ -114,6 +114,7 @@ export function useAppStore() {
         id: p.id,
         nombre: p.full_name || p.email,
         email: p.email,
+        cargo: p.cargo,
       })),
     );
     setTaskRows((tasksRes.data ?? []) as TaskRow[]);

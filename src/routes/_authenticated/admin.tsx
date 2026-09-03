@@ -1,11 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -22,7 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAppStore } from "@/lib/rckt/useAppStore";
-import { createTeamUser, deleteTeamUser } from "@/lib/admin.functions";
+import { AREAS } from "@/lib/rckt/types";
+import { createTeamUser, deleteTeamUser, updateUserCargo } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -49,12 +58,20 @@ function AdminPage() {
   const navigate = useNavigate();
   const createUser = useServerFn(createTeamUser);
   const deleteUser = useServerFn(deleteTeamUser);
+  const saveCargo = useServerFn(updateUserCargo);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"admin" | "colaborador">("colaborador");
+  const [cargo, setCargo] = useState<string>(AREAS[0]);
   const [saving, setSaving] = useState(false);
+
+  const [editing, setEditing] = useState<{ id: string; nombre: string; cargo: string } | null>(
+    null,
+  );
+  const [editCargo, setEditCargo] = useState<string>(AREAS[0]);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   if (!store.hydrated) return <div className="min-h-screen" />;
 
@@ -78,17 +95,37 @@ function AdminPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await createUser({ data: { email, password, fullName, role } });
+      await createUser({ data: { email, password, fullName, role, cargo } });
       toast.success("Cuenta creada");
       setEmail("");
       setPassword("");
       setFullName("");
       setRole("colaborador");
+      setCargo(AREAS[0]);
       await store.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo crear la cuenta");
     }
     setSaving(false);
+  };
+
+  const openEdit = (p: { id: string; nombre: string; cargo: string }) => {
+    setEditing(p);
+    setEditCargo(p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]) ? p.cargo : AREAS[0]);
+  };
+
+  const submitEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    try {
+      await saveCargo({ data: { userId: editing.id, cargo: editCargo } });
+      toast.success("Cargo actualizado");
+      setEditing(null);
+      await store.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar el cargo");
+    }
+    setSavingEdit(false);
   };
 
   return (
@@ -164,6 +201,21 @@ function AdminPage() {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1.5">
+            <Label>Cargo</Label>
+            <Select value={cargo} onValueChange={setCargo}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AREAS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="sm:col-span-2">
             <Button type="submit" className="gap-2" disabled={saving}>
               <UserPlus className="size-4" />
@@ -178,7 +230,8 @@ function AdminPage() {
               <TableRow className="bg-secondary/70 hover:bg-secondary/70">
                 <TableHead>Nombre</TableHead>
                 <TableHead>Correo</TableHead>
-                <TableHead className="w-[80px] text-right">Acción</TableHead>
+                <TableHead>Cargo</TableHead>
+                <TableHead className="w-[96px] text-right">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,7 +239,16 @@ function AdminPage() {
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nombre}</TableCell>
                   <TableCell className="text-muted-foreground">{p.email}</TableCell>
+                  <TableCell className="text-muted-foreground">{p.cargo || "—"}</TableCell>
                   <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Editar cargo"
+                      onClick={() => openEdit(p)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -212,6 +274,41 @@ function AdminPage() {
           </Table>
         </section>
       </main>
+
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar cargo</DialogTitle>
+            <DialogDescription>
+              Cambia el cargo de {editing?.nombre}. El correo, la contraseña y el rol no se pueden
+              editar aquí.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label>Cargo</Label>
+            <Select value={editCargo} onValueChange={setEditCargo}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AREAS.map((a) => (
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void submitEdit()} disabled={savingEdit}>
+              {savingEdit ? "Guardando…" : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -95,6 +95,13 @@ function Dashboard() {
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
   const isPastWeek = !historico && semana < currentWeekISO();
   const colaboradores = useMemo(() => store.profiles.map((p) => p.nombre), [store.profiles]);
+  const cargos = useMemo(
+    () =>
+      Object.fromEntries(
+        store.profiles.filter((p) => p.cargo).map((p) => [p.nombre, p.cargo]),
+      ) as Record<string, string>,
+    [store.profiles],
+  );
 
   const scopeTasks = useMemo(
     () => (historico ? store.data.tasks : store.data.tasks.filter((t) => t.semana === semana)),
@@ -517,6 +524,7 @@ function Dashboard() {
         canEditAll={isCoord}
         task={editing}
         colaboradores={colaboradores}
+        cargos={cargos}
         defaultColaborador={isCoord ? undefined : nombre}
         onSubmit={handleSubmit}
       />
