@@ -69,6 +69,7 @@ export function TaskDialog({
   defaultColaborador,
   colaboradores = [],
   cargos,
+  currentUserName,
   onSubmit,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
