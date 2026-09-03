@@ -218,7 +218,15 @@ export function TaskDialog({
 
           <div className="space-y-1.5 sm:col-span-2">
             <Label>Tarea / Entregable</Label>
-            <Input
+            <Textarea
+              ref={(el) => {
+                if (el) {
+                  el.style.height = "auto";
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
+              rows={3}
+              className="min-h-20 resize-none overflow-hidden"
               value={v.tarea}
               onChange={(e) => setV({ ...v, tarea: e.target.value })}
               placeholder="Describe el entregable"
@@ -227,12 +235,24 @@ export function TaskDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Fecha límite</Label>
-            <DateField
-              value={v.fechaLimite || null}
-              onChange={(iso) => setV({ ...v, fechaLimite: iso ?? "" })}
-              disabled={!canEditAll}
-            />
+            <Label>Fecha y hora límite</Label>
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <DateField
+                  value={v.fechaLimite || null}
+                  onChange={(iso) => setV({ ...v, fechaLimite: iso ?? "" })}
+                  disabled={!canEditAll}
+                />
+              </div>
+              <Input
+                type="time"
+                aria-label="Hora límite"
+                className="w-28 shrink-0"
+                value={v.horaLimite ?? ""}
+                onChange={(e) => setV({ ...v, horaLimite: e.target.value || null })}
+                disabled={!canEditAll}
+              />
+            </div>
             {canEditAll ? (
               <p className="text-xs text-muted-foreground">
                 La tarea se asigna automáticamente a la semana de esta fecha.
