@@ -258,22 +258,36 @@ export function useAppStore() {
           hora_limite: input.horaLimite || null,
           fecha_entrega: applyEstadoRules(null, input.estado, input.fechaEntrega),
           observaciones: input.observaciones,
+          enlaces: input.enlaces,
         })
         .select("id")
         .single();
       if (error) throw error;
       if (inserted?.id) {
+        let uploadError: unknown = null;
+        if (input.nuevosArchivos.length > 0) {
+          try {
+            await uploadAttachments(inserted.id, input.nuevosArchivos, userId);
+          } catch (e) {
+            uploadError = e;
+          }
+        }
         try {
           const res = await notifyTaskAssigned({ data: { taskId: inserted.id } });
           if (!res.sent) console.warn("Correo de asignación no enviado:", res.reason);
         } catch (e) {
           console.warn("Correo de asignación no enviado:", e);
         }
+        if (uploadError) {
+          await refresh();
+          throw uploadError instanceof Error
+            ? new Error(`Tarea creada, pero ${uploadError.message}`)
+            : new Error("Tarea creada, pero falló la subida de adjuntos");
+        }
       }
       await refresh();
     },
-
-    [idOf, refresh],
+    [idOf, refresh, userId],
   );
 
   const updateTask = useCallback(
