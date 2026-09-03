@@ -579,6 +579,11 @@ export function TaskDialog({
               </ul>
             ) : null}
           </div>
+
+          {/* Comentarios (solo tareas existentes) */}
+          {mode === "edit" && task ? (
+            <TaskComments taskId={task.id} authorName={currentUserName ?? ""} isAdmin={canEditAll} />
+          ) : null}
         </div>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
