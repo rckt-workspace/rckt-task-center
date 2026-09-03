@@ -342,20 +342,13 @@ export function TaskDialog({
           </div>
 
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>Tarea / Entregable</Label>
-            <Textarea
-              ref={(el) => {
-                if (el) {
-                  el.style.height = "auto";
-                  el.style.height = `${el.scrollHeight}px`;
-                }
-              }}
-              rows={3}
-              className="min-h-20 resize-none overflow-hidden"
+            <Label>Nombre de la tarea</Label>
+            <Input
               value={v.tarea}
               onChange={(e) => setV({ ...v, tarea: e.target.value })}
-              placeholder="Describe el entregable"
+              placeholder="Título corto de la tarea (ej. Diseñar landing de campaña)"
               disabled={!canEditAll}
+              maxLength={200}
             />
           </div>
 
@@ -395,12 +388,19 @@ export function TaskDialog({
           </div>
 
           <div className="space-y-1.5 sm:col-span-2">
-            <Label>Observaciones</Label>
+            <Label>Descripción detallada</Label>
             <Textarea
-              rows={3}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = "auto";
+                  el.style.height = `${Math.max(el.scrollHeight, 128)}px`;
+                }
+              }}
+              rows={5}
+              className="min-h-32 resize-none overflow-hidden leading-relaxed"
               value={v.observaciones}
               onChange={(e) => setV({ ...v, observaciones: e.target.value })}
-              placeholder="Notas, bloqueos o contexto"
+              placeholder="Explica en detalle en qué consiste la tarea, el entregable esperado, contexto, bloqueos o notas."
             />
           </div>
 
