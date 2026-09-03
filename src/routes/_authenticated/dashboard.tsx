@@ -34,6 +34,7 @@ import {
 import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
+import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
 import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
@@ -80,6 +81,7 @@ function Dashboard() {
   const [semana, setSemana] = useState<string>(currentWeekISO());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
+  const [viewing, setViewing] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [newWeek, setNewWeek] = useState<string | null>(null);
   const [fColab, setFColab] = useState<string>(ALL);
@@ -520,6 +522,7 @@ function Dashboard() {
                 setEditing(t);
                 setDialogOpen(true);
               }}
+              onOpen={(t) => setViewing(t)}
             />
           </section>
         ) : null}
@@ -555,6 +558,7 @@ function Dashboard() {
               setEditing(t);
               setDialogOpen(true);
             }}
+            onOpen={(t) => setViewing(t)}
             onDelete={isCoord ? (t) => setDeleting(t) : undefined}
           />
         </section>
@@ -575,6 +579,7 @@ function Dashboard() {
                 setEditing(t);
                 setDialogOpen(true);
               }}
+              onOpen={(t) => setViewing(t)}
             />
           </section>
         ) : null}
@@ -594,6 +599,20 @@ function Dashboard() {
         defaultColaborador={isCoord ? undefined : nombre}
         currentUserName={nombre}
         onSubmit={handleSubmit}
+      />
+
+      <TaskDetailDialog
+        open={!!viewing}
+        onOpenChange={(o) => {
+          if (!o) setViewing(null);
+        }}
+        task={viewing ? (store.data.tasks.find((t) => t.id === viewing.id) ?? viewing) : null}
+        isAdmin={isCoord}
+        currentUserName={nombre}
+        onEdit={(t) => {
+          setEditing(t);
+          setDialogOpen(true);
+        }}
       />
 
       <AttentionDialog

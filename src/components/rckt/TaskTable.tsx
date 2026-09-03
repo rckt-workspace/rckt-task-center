@@ -1,4 +1,4 @@
-import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -19,10 +19,11 @@ interface Props {
   showColaborador?: boolean | undefined;
   showSemana?: boolean | undefined;
   onEdit: (task: Task) => void;
+  onOpen?: ((task: Task) => void) | undefined;
   onDelete?: ((task: Task) => void) | undefined;
 }
 
-export function TaskTable({ tasks, showColaborador = false, showSemana = false, onEdit, onDelete }: Props) {
+export function TaskTable({ tasks, showColaborador = false, showSemana = false, onEdit, onOpen, onDelete }: Props) {
   if (tasks.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
@@ -48,7 +49,7 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
               <TableHead>Fecha de entrega</TableHead>
               <TableHead className="min-w-[180px]">Observaciones</TableHead>
               <TableHead className="min-w-[160px]">Adjuntos</TableHead>
-              <TableHead className="w-[90px] text-right">Acción</TableHead>
+              <TableHead className="w-[200px] text-right">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,6 +90,17 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                     <TaskAttachments adjuntos={t.adjuntos} enlaces={t.enlaces} />
                   </TableCell>
                   <TableCell className="text-right whitespace-nowrap">
+                    {onOpen ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mr-1 gap-1.5"
+                        onClick={() => onOpen(t)}
+                      >
+                        <Eye className="size-3.5" />
+                        Abrir tarea
+                      </Button>
+                    ) : null}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -153,6 +165,17 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                 </div>
               </div>
               <p className="mt-2 font-medium">{t.tarea}</p>
+              {onOpen ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 gap-1.5"
+                  onClick={() => onOpen(t)}
+                >
+                  <Eye className="size-3.5" />
+                  Abrir tarea
+                </Button>
+              ) : null}
               <p className="mt-1 text-sm text-muted-foreground">
                 {t.cliente} · {t.area}
                 {showColaborador ? ` · ${t.colaborador}` : ""}
