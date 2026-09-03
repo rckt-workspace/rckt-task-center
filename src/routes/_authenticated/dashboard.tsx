@@ -93,6 +93,7 @@ function Dashboard() {
   const [puntoOpen, setPuntoOpen] = useState(false);
   const [editingPunto, setEditingPunto] = useState<AttentionPoint | null>(null);
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
+  const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
 
   const isCoord = store.isAdmin;
