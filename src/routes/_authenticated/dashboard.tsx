@@ -84,6 +84,7 @@ function Dashboard() {
   const [editing, setEditing] = useState<Task | null>(null);
   const [viewing, setViewing] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
+  const [confirmTaskOpen, setConfirmTaskOpen] = useState(false);
   const [newWeek, setNewWeek] = useState<string | null>(null);
   const [fColab, setFColab] = useState<string>(ALL);
   const [fCliente, setFCliente] = useState<string>(ALL);
@@ -92,6 +93,7 @@ function Dashboard() {
   const [puntoOpen, setPuntoOpen] = useState(false);
   const [editingPunto, setEditingPunto] = useState<AttentionPoint | null>(null);
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
+  const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
 
   const isCoord = store.isAdmin;
@@ -454,7 +456,10 @@ function Dashboard() {
               setEditingPunto(p);
               setPuntoOpen(true);
             }}
-            onDelete={(p) => setDeletingPunto(p)}
+            onDelete={(p) => {
+              setDeletingPunto(p);
+              setConfirmPuntoOpen(true);
+            }}
           />
         ) : null}
 
@@ -562,7 +567,14 @@ function Dashboard() {
               setDialogOpen(true);
             }}
             onOpen={(t) => setViewing(t)}
-            onDelete={isCoord ? (t) => setDeleting(t) : undefined}
+            onDelete={
+              isCoord
+                ? (t) => {
+                    setDeleting(t);
+                    setConfirmTaskOpen(true);
+                  }
+                : undefined
+            }
           />
         </section>
 
@@ -647,7 +659,17 @@ function Dashboard() {
         onSubmit={handlePunto}
       />
 
-      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+      <AlertDialog
+        open={confirmTaskOpen}
+        onOpenChange={(o) => {
+          setConfirmTaskOpen(o);
+          if (!o) {
+            // Limpia el objetivo después de la animación de cierre para no
+            // alterar el contenido del diálogo mientras se desmonta.
+            setTimeout(() => setDeleting(null), 250);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar esta tarea?</AlertDialogTitle>
@@ -661,7 +683,7 @@ function Dashboard() {
             <AlertDialogAction
               onClick={async () => {
                 const target = deleting;
-                setDeleting(null);
+                setConfirmTaskOpen(false);
                 if (!target) return;
                 try {
                   await store.deleteTask(target.id);
@@ -677,7 +699,15 @@ function Dashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deletingPunto} onOpenChange={(o) => !o && setDeletingPunto(null)}>
+      <AlertDialog
+        open={confirmPuntoOpen}
+        onOpenChange={(o) => {
+          setConfirmPuntoOpen(o);
+          if (!o) {
+            setTimeout(() => setDeletingPunto(null), 250);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar este punto de atención?</AlertDialogTitle>
@@ -690,7 +720,7 @@ function Dashboard() {
             <AlertDialogAction
               onClick={async () => {
                 const target = deletingPunto;
-                setDeletingPunto(null);
+                setConfirmPuntoOpen(false);
                 if (!target) return;
                 try {
                   await store.deletePunto(target.id);
