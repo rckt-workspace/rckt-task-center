@@ -84,11 +84,9 @@ export function LoginNotices({ userId, isAdmin, tasks, hydrated, onOpenTask, onG
   }, [hydrated, userId, isAdmin, tasks]);
 
   const markSeen = async () => {
-    const col = isAdmin ? "comments_seen_at" : "tasks_seen_at";
-    await supabase
-      .from("profiles")
-      .update({ [col]: new Date().toISOString() })
-      .eq("id", userId);
+    const now = new Date().toISOString();
+    const patch = isAdmin ? { comments_seen_at: now } : { tasks_seen_at: now };
+    await supabase.from("profiles").update(patch).eq("id", userId);
   };
 
   const review = async () => {
