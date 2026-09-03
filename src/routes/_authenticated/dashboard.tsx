@@ -659,7 +659,17 @@ function Dashboard() {
         onSubmit={handlePunto}
       />
 
-      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+      <AlertDialog
+        open={confirmTaskOpen}
+        onOpenChange={(o) => {
+          setConfirmTaskOpen(o);
+          if (!o) {
+            // Limpia el objetivo después de la animación de cierre para no
+            // alterar el contenido del diálogo mientras se desmonta.
+            setTimeout(() => setDeleting(null), 250);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar esta tarea?</AlertDialogTitle>
@@ -673,7 +683,7 @@ function Dashboard() {
             <AlertDialogAction
               onClick={async () => {
                 const target = deleting;
-                setDeleting(null);
+                setConfirmTaskOpen(false);
                 if (!target) return;
                 try {
                   await store.deleteTask(target.id);
@@ -689,7 +699,15 @@ function Dashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deletingPunto} onOpenChange={(o) => !o && setDeletingPunto(null)}>
+      <AlertDialog
+        open={confirmPuntoOpen}
+        onOpenChange={(o) => {
+          setConfirmPuntoOpen(o);
+          if (!o) {
+            setTimeout(() => setDeletingPunto(null), 250);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar este punto de atención?</AlertDialogTitle>
