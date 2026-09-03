@@ -239,7 +239,16 @@ function AdminPage() {
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nombre}</TableCell>
                   <TableCell className="text-muted-foreground">{p.email}</TableCell>
+                  <TableCell className="text-muted-foreground">{p.cargo || "—"}</TableCell>
                   <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Editar cargo"
+                      onClick={() => openEdit(p)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
