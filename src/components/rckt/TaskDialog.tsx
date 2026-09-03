@@ -68,10 +68,14 @@ export function TaskDialog({
   useEffect(() => {
     if (!open) return;
     setError(null);
+    const areaFromCargo = (nombre: string, fallback: Area): Area => {
+      const cargo = cargos?.[nombre];
+      return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
+    };
     if (task) {
       setV({
         colaborador: task.colaborador,
-        area: task.area,
+        area: areaFromCargo(task.colaborador, task.area),
         cliente: task.cliente,
         tarea: task.tarea,
         estado: task.estado,
@@ -80,9 +84,11 @@ export function TaskDialog({
         observaciones: task.observaciones,
       });
     } else {
-      setV(emptyValues(defaultColaborador));
+      const base = emptyValues(defaultColaborador);
+      base.area = areaFromCargo(base.colaborador, base.area);
+      setV(base);
     }
-  }, [open, task, defaultColaborador]);
+  }, [open, task, defaultColaborador, cargos]);
 
   const setEstado = (estado: Estado) => {
     setV((prev) => ({
