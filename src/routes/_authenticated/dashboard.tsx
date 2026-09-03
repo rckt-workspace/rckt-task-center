@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CalendarPlus,
+  FileDown,
+  FileSpreadsheet,
   Filter,
   History as HistoryIcon,
   LogOut,
@@ -40,6 +42,7 @@ import { AttentionDialog, type AttentionInput } from "@/components/rckt/Attentio
 import { supabase } from "@/integrations/supabase/client";
 
 import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
+import { exportTasksExcel, exportTasksPDF } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Task } from "@/lib/rckt/types";
 
@@ -254,6 +257,34 @@ function Dashboard() {
             <Button variant="ghost" size="sm" onClick={() => setSemana(currentWeekISO())}>
               Ir a semana actual
             </Button>
+          ) : null}
+          {isCoord ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  exportTasksPDF(scopeTasks, historico ? null : semana);
+                  toast.success("PDF exportado");
+                }}
+              >
+                <FileDown className="size-3.5" />
+                Exportar PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  exportTasksExcel(scopeTasks, historico ? null : semana);
+                  toast.success("Excel exportado");
+                }}
+              >
+                <FileSpreadsheet className="size-3.5" />
+                Exportar Excel
+              </Button>
+            </>
           ) : null}
           {isCoord ? (
             <div className="ml-auto flex flex-wrap items-center gap-2">
