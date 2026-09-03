@@ -303,11 +303,18 @@ export function useAppStore() {
       } else if (patch.fechaEntrega !== undefined) {
         update["fecha_entrega"] = patch.fechaEntrega;
       }
+      if (patch.enlaces !== undefined) update["enlaces"] = patch.enlaces;
       const { error } = await supabase.from("tasks").update(update).eq("id", id);
       if (error) throw error;
+      if (patch.eliminarAdjuntos?.length) {
+        await removeAttachments(attachmentRows, patch.eliminarAdjuntos);
+      }
+      if (patch.nuevosArchivos?.length) {
+        await uploadAttachments(id, patch.nuevosArchivos, userId);
+      }
       await refresh();
     },
-    [taskRows, idOf, refresh],
+    [taskRows, attachmentRows, idOf, refresh, userId],
   );
 
   const deleteTask = useCallback(
