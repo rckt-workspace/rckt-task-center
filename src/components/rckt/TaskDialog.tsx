@@ -278,6 +278,147 @@ export function TaskDialog({
               placeholder="Notas, bloqueos o contexto"
             />
           </div>
+
+          {/* Adjuntos */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Adjuntos</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPT}
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                if (files.length) setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, ...files] }));
+                e.target.value = "";
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="size-3.5" />
+              Subir archivos
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Imágenes, videos, PDF, Word y Excel. Puedes seleccionar varios a la vez (máx. 50 MB c/u).
+            </p>
+            {existingAdjuntos.length > 0 || v.nuevosArchivos.length > 0 ? (
+              <ul className="divide-y divide-border rounded-md border border-border bg-background">
+                {existingAdjuntos.map((a) => {
+                  const Icon = fileIcon(a.mime);
+                  return (
+                    <li key={a.id} className="flex items-center gap-2 px-3 py-2 text-sm">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate">{a.name}</span>
+                      <span className="text-xs text-muted-foreground">{formatSize(a.size)}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label="Quitar adjunto"
+                        onClick={() =>
+                          setV((prev) => ({ ...prev, eliminarAdjuntos: [...prev.eliminarAdjuntos, a.id] }))
+                        }
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    </li>
+                  );
+                })}
+                {v.nuevosArchivos.map((f, i) => {
+                  const Icon = fileIcon(f.type);
+                  return (
+                    <li key={`${f.name}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                      <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase">
+                        Nuevo
+                      </span>
+                      <span className="text-xs text-muted-foreground">{formatSize(f.size)}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label="Quitar archivo"
+                        onClick={() =>
+                          setV((prev) => ({
+                            ...prev,
+                            nuevosArchivos: prev.nuevosArchivos.filter((_, j) => j !== i),
+                          }))
+                        }
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+
+          {/* Enlaces */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Enlaces</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="url"
+                placeholder="https://drive.google.com/… · Figma · Canva"
+                value={linkDraft}
+                onChange={(e) => {
+                  setLinkDraft(e.target.value);
+                  setLinkError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addLink();
+                  }
+                }}
+              />
+              <Button type="button" variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={addLink}>
+                <Plus className="size-3.5" />
+                Agregar enlace
+              </Button>
+            </div>
+            {linkError ? <p className="text-xs text-destructive">{linkError}</p> : null}
+            {v.enlaces.length > 0 ? (
+              <ul className="divide-y divide-border rounded-md border border-border bg-background">
+                {v.enlaces.map((url, i) => (
+                  <li key={`${url}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <Link2 className="size-4 shrink-0 text-muted-foreground" />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-w-0 flex-1 truncate text-primary hover:underline"
+                      title={url}
+                    >
+                      {url}
+                    </a>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label="Quitar enlace"
+                      onClick={() =>
+                        setV((prev) => ({ ...prev, enlaces: prev.enlaces.filter((_, j) => j !== i) }))
+                      }
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </div>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
