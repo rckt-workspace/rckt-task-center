@@ -47,6 +47,7 @@ const emptyValues = (colaborador?: Colaborador): TaskInput => ({
   tarea: "",
   estado: "En curso",
   fechaLimite: "",
+  horaLimite: null,
   fechaEntrega: null,
   observaciones: "",
 });
@@ -80,6 +81,7 @@ export function TaskDialog({
         tarea: task.tarea,
         estado: task.estado,
         fechaLimite: task.fechaLimite,
+        horaLimite: task.horaLimite,
         fechaEntrega: task.fechaEntrega,
         observaciones: task.observaciones,
       });
