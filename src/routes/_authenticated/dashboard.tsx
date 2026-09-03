@@ -456,7 +456,10 @@ function Dashboard() {
               setEditingPunto(p);
               setPuntoOpen(true);
             }}
-            onDelete={(p) => setDeletingPunto(p)}
+            onDelete={(p) => {
+              setDeletingPunto(p);
+              setConfirmPuntoOpen(true);
+            }}
           />
         ) : null}
 
@@ -564,7 +567,14 @@ function Dashboard() {
               setDialogOpen(true);
             }}
             onOpen={(t) => setViewing(t)}
-            onDelete={isCoord ? (t) => setDeleting(t) : undefined}
+            onDelete={
+              isCoord
+                ? (t) => {
+                    setDeleting(t);
+                    setConfirmTaskOpen(true);
+                  }
+                : undefined
+            }
           />
         </section>
 
