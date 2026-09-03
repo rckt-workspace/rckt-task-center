@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
-import { formatCO, isOverdue, weekLabel } from "@/lib/rckt/dates";
+import { formatCO, formatFechaHora, isOverdue, weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
