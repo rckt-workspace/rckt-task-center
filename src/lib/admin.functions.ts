@@ -7,6 +7,7 @@ const createUserSchema = z.object({
   password: z.string().min(8),
   fullName: z.string().min(1),
   role: z.enum(["admin", "colaborador"]),
+  cargo: z.string().default(""),
 });
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
@@ -30,7 +31,29 @@ export const createTeamUser = createServerFn({ method: "POST" })
       user_metadata: { full_name: data.fullName, role: data.role },
     });
     if (error) throw new Error(error.message);
+    if (created.user && data.cargo) {
+      const { error: cargoError } = await supabaseAdmin
+        .from("profiles")
+        .update({ cargo: data.cargo })
+        .eq("id", created.user.id);
+      if (cargoError) throw new Error(cargoError.message);
+    }
     return { id: created.user?.id ?? null };
+  });
+
+export const updateUserCargo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ userId: z.string().uuid(), cargo: z.string().min(1) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("profiles")
+      .update({ cargo: data.cargo })
+      .eq("id", data.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const deleteTeamUser = createServerFn({ method: "POST" })
