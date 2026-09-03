@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
-import { fileIcon, formatSize } from "./TaskAttachments";
+import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
