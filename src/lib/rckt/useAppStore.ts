@@ -146,6 +146,7 @@ export function useAppStore() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [taskRows, setTaskRows] = useState<TaskRow[]>([]);
   const [pointRows, setPointRows] = useState<PointRow[]>([]);
+  const [attachmentRows, setAttachmentRows] = useState<AttachmentRow[]>([]);
   const [semanas, setSemanas] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
