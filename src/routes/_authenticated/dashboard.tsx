@@ -720,7 +720,7 @@ function Dashboard() {
             <AlertDialogAction
               onClick={async () => {
                 const target = deletingPunto;
-                setDeletingPunto(null);
+                setConfirmPuntoOpen(false);
                 if (!target) return;
                 try {
                   await store.deletePunto(target.id);
