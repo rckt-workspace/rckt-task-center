@@ -259,6 +259,34 @@ function Dashboard() {
             </Button>
           ) : null}
           {isCoord ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  exportTasksPDF(scopeTasks, historico ? null : semana);
+                  toast.success("PDF exportado");
+                }}
+              >
+                <FileDown className="size-3.5" />
+                Exportar PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  exportTasksExcel(scopeTasks, historico ? null : semana);
+                  toast.success("Excel exportado");
+                }}
+              >
+                <FileSpreadsheet className="size-3.5" />
+                Exportar Excel
+              </Button>
+            </>
+          ) : null}
+          {isCoord ? (
             <div className="ml-auto flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2">
                 <DateField
