@@ -40,6 +40,7 @@ export interface Perfil {
   id: string;
   nombre: string;
   email: string;
+  cargo: string;
 }
 
 export interface Task {
