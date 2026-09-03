@@ -35,6 +35,7 @@ import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
+import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
 import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
@@ -230,6 +231,8 @@ function Dashboard() {
   };
 
   const signOut = async () => {
+    const uid = store.session?.user.id;
+    if (uid && typeof window !== "undefined") window.sessionStorage.removeItem(noticeSessionKey(uid));
     await supabase.auth.signOut();
     void navigate({ to: "/auth", replace: true });
   };
@@ -527,7 +530,7 @@ function Dashboard() {
           </section>
         ) : null}
 
-        <section>
+        <section id="lista-tareas">
           <h2 className="mb-3 text-base font-semibold">
             {isCoord
               ? historico
@@ -600,6 +603,24 @@ function Dashboard() {
         currentUserName={nombre}
         onSubmit={handleSubmit}
       />
+
+      {store.session ? (
+        <LoginNotices
+          userId={store.session.user.id}
+          isAdmin={isCoord}
+          tasks={store.data.tasks}
+          hydrated={store.hydrated}
+          onOpenTask={(t) => {
+            if (!historico && t.semana !== semana) setSemana(t.semana);
+            setViewing(t);
+          }}
+          onGoToList={() => {
+            const nuevas = store.data.tasks.filter((t) => t.semana !== semana);
+            if (!historico && scopeTasks.length === 0 && nuevas.length > 0) setHistorico(true);
+            document.getElementById("lista-tareas")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        />
+      ) : null}
 
       <TaskDetailDialog
         open={!!viewing}
