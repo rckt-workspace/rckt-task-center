@@ -95,7 +95,8 @@ export function TaskDialog({
   }, [recording]);
 
   const stopRecording = () => {
-    recorderRef.current?.stop();
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") rec.stop();
   };
 
   const startRecording = async () => {
