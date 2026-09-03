@@ -48,7 +48,7 @@ export function linkLabel(url: string): string {
 }
 
 /** Reproductor de una nota de voz adjunta (URL firmada temporal). */
-function AudioPlayer({ a }: { a: Attachment }) {
+export function AudioPlayer({ a }: { a: Attachment }) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
