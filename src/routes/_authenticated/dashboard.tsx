@@ -533,6 +533,26 @@ function Dashboard() {
             onDelete={isCoord ? (t) => setDeleting(t) : undefined}
           />
         </section>
+
+        {!isCoord && upcomingTasks.length > 0 ? (
+          <section>
+            <h2 className="mb-1 text-base font-semibold">
+              Próximas semanas ({upcomingTasks.length})
+            </h2>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Tareas asignadas con fecha límite en semanas posteriores a la que estás viendo.
+            </p>
+            <TaskTable
+              tasks={upcomingTasks}
+              showColaborador={false}
+              showSemana
+              onEdit={(t) => {
+                setEditing(t);
+                setDialogOpen(true);
+              }}
+            />
+          </section>
+        ) : null}
       </main>
 
       <TaskDialog
