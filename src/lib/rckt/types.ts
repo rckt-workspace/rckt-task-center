@@ -58,6 +58,8 @@ export interface Task {
   estado: Estado;
   /** yyyy-MM-dd */
   fechaLimite: string;
+  /** HH:mm (24h) | null */
+  horaLimite: string | null;
   /** yyyy-MM-dd | null */
   fechaEntrega: string | null;
   observaciones: string;
