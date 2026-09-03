@@ -133,6 +133,15 @@ export async function getAttachmentUrl(path: string): Promise<string> {
   return data.signedUrl;
 }
 
+/** URL firmada que fuerza la descarga del archivo con su nombre original. */
+export async function getAttachmentDownloadUrl(path: string, fileName: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(ATTACHMENTS_BUCKET)
+    .createSignedUrl(path, 60 * 60, { download: fileName });
+  if (error || !data) throw error ?? new Error("No se pudo generar el enlace de descarga");
+  return data.signedUrl;
+}
+
 function loadSemanas(): string[] {
   if (typeof window === "undefined") return [];
   try {
