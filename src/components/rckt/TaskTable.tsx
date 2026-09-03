@@ -83,6 +83,9 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   <TableCell className="text-muted-foreground">
                     {t.observaciones || "—"}
                   </TableCell>
+                  <TableCell className="max-w-[220px]">
+                    <TaskAttachments adjuntos={t.adjuntos} enlaces={t.enlaces} />
+                  </TableCell>
                   <TableCell className="text-right whitespace-nowrap">
                     <Button
                       variant="ghost"
