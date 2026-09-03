@@ -84,6 +84,7 @@ function Dashboard() {
   const [editing, setEditing] = useState<Task | null>(null);
   const [viewing, setViewing] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
+  const [confirmTaskOpen, setConfirmTaskOpen] = useState(false);
   const [newWeek, setNewWeek] = useState<string | null>(null);
   const [fColab, setFColab] = useState<string>(ALL);
   const [fCliente, setFCliente] = useState<string>(ALL);
