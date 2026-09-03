@@ -41,7 +41,7 @@ import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
 import { supabase } from "@/integrations/supabase/client";
 
-import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
+import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
 import {
   exportMyTasksExcel,
   exportMyTasksPDF,
