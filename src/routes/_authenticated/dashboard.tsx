@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CalendarPlus,
+  FileDown,
+  FileSpreadsheet,
   Filter,
   History as HistoryIcon,
   LogOut,
@@ -40,6 +42,7 @@ import { AttentionDialog, type AttentionInput } from "@/components/rckt/Attentio
 import { supabase } from "@/integrations/supabase/client";
 
 import { useAppStore, type TaskInput } from "@/lib/rckt/useAppStore";
+import { exportTasksExcel, exportTasksPDF } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Task } from "@/lib/rckt/types";
 
