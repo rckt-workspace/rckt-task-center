@@ -522,6 +522,21 @@ function Dashboard() {
                 : "Todas las tareas"
               : "Mis tareas"}
           </h2>
+          {!historico && scopeTasks.length === 0 && otherWeeks.length > 0 ? (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+              <span>
+                No hay tareas en esta semana, pero existen {store.data.tasks.length} en otras semanas:
+              </span>
+              {otherWeeks.map((w) => (
+                <Button key={w.semana} variant="outline" size="sm" onClick={() => setSemana(w.semana)}>
+                  {weekLabel(w.semana)} ({w.count})
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setHistorico(true)}>
+                Ver histórico
+              </Button>
+            </div>
+          ) : null}
           <TaskTable
             tasks={weekTasks}
             showColaborador={isCoord}
