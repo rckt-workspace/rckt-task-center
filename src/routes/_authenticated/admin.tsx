@@ -95,17 +95,37 @@ function AdminPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await createUser({ data: { email, password, fullName, role } });
+      await createUser({ data: { email, password, fullName, role, cargo } });
       toast.success("Cuenta creada");
       setEmail("");
       setPassword("");
       setFullName("");
       setRole("colaborador");
+      setCargo(AREAS[0]);
       await store.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo crear la cuenta");
     }
     setSaving(false);
+  };
+
+  const openEdit = (p: { id: string; nombre: string; cargo: string }) => {
+    setEditing(p);
+    setEditCargo(p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]) ? p.cargo : AREAS[0]);
+  };
+
+  const submitEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    try {
+      await saveCargo({ data: { userId: editing.id, cargo: editCargo } });
+      toast.success("Cargo actualizado");
+      setEditing(null);
+      await store.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar el cargo");
+    }
+    setSavingEdit(false);
   };
 
   return (
