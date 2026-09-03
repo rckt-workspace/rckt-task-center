@@ -22,6 +22,7 @@ import {
 import { DateField } from "./DateField";
 import { fileIcon, formatSize } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
+import { TaskSteps } from "./TaskSteps";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
@@ -583,6 +584,9 @@ export function TaskDialog({
               </ul>
             ) : null}
           </div>
+
+          {/* Checklist personal del colaborador (solo tareas existentes) */}
+          {mode === "edit" && task ? <TaskSteps taskId={task.id} readOnly={canEditAll} /> : null}
 
           {/* Comentarios (solo tareas existentes) */}
           {mode === "edit" && task ? (
