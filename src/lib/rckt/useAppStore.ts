@@ -24,6 +24,7 @@ export interface TaskInput {
   tarea: string;
   estado: Task["estado"];
   fechaLimite: string;
+  horaLimite: string | null;
   fechaEntrega: string | null;
   observaciones: string;
 }
@@ -47,6 +48,7 @@ interface TaskRow {
   tarea: string;
   estado: string;
   fecha_limite: string;
+  hora_limite: string | null;
   fecha_entrega: string | null;
   observaciones: string;
   created_at: string;
@@ -148,6 +150,7 @@ export function useAppStore() {
         tarea: r.tarea,
         estado: r.estado as Task["estado"],
         fechaLimite: r.fecha_limite,
+        horaLimite: r.hora_limite,
         fechaEntrega: r.fecha_entrega,
         observaciones: r.observaciones,
         createdAt: r.created_at,
@@ -189,6 +192,7 @@ export function useAppStore() {
           tarea: input.tarea,
           estado: input.estado,
           fecha_limite: input.fechaLimite,
+          hora_limite: input.horaLimite || null,
           fecha_entrega: applyEstadoRules(null, input.estado, input.fechaEntrega),
           observaciones: input.observaciones,
         })
@@ -226,6 +230,7 @@ export function useAppStore() {
         update["fecha_limite"] = patch.fechaLimite;
         update["semana"] = semanaDeFechaLimite(patch.fechaLimite);
       }
+      if (patch.horaLimite !== undefined) update["hora_limite"] = patch.horaLimite || null;
       if (patch.estado !== undefined) {
         update["estado"] = patch.estado;
         update["fecha_entrega"] =

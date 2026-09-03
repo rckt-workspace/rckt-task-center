@@ -101,6 +101,7 @@ export type Database = {
           estado: string
           fecha_entrega: string | null
           fecha_limite: string
+          hora_limite: string | null
           id: string
           observaciones: string
           semana: string
@@ -115,6 +116,7 @@ export type Database = {
           estado?: string
           fecha_entrega?: string | null
           fecha_limite: string
+          hora_limite?: string | null
           id?: string
           observaciones?: string
           semana: string
@@ -129,6 +131,7 @@ export type Database = {
           estado?: string
           fecha_entrega?: string | null
           fecha_limite?: string
+          hora_limite?: string | null
           id?: string
           observaciones?: string
           semana?: string

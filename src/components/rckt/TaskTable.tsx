@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
-import { formatCO, isOverdue, weekLabel } from "@/lib/rckt/dates";
+import { formatCO, formatFechaHora, isOverdue, weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
@@ -76,7 +76,7 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   >
                     <span className="inline-flex items-center gap-1.5">
                       {overdue ? <AlertTriangle className="size-3.5" /> : null}
-                      {formatCO(t.fechaLimite)}
+                      {formatFechaHora(t.fechaLimite, t.horaLimite)}
                     </span>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{formatCO(t.fechaEntrega)}</TableCell>
@@ -157,7 +157,7 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                 <div>
                   <dt className="text-xs text-muted-foreground">Fecha límite</dt>
                   <dd className={cn(overdue && "font-medium text-overdue")}>
-                    {formatCO(t.fechaLimite)}
+                    {formatFechaHora(t.fechaLimite, t.horaLimite)}
                   </dd>
                 </div>
                 <div>
