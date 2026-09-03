@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link2, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,12 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
+import { fileIcon, formatSize } from "./TaskAttachments";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
 import type { TaskInput } from "@/lib/rckt/useAppStore";
 
 type Mode = "create" | "edit";
+
+const ACCEPT =
+  "image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 interface Props {
   open: boolean;
@@ -50,6 +55,9 @@ const emptyValues = (colaborador?: Colaborador): TaskInput => ({
   horaLimite: null,
   fechaEntrega: null,
   observaciones: "",
+  enlaces: [],
+  nuevosArchivos: [],
+  eliminarAdjuntos: [],
 });
 
 export function TaskDialog({
