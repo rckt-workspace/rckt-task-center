@@ -1,11 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -22,7 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAppStore } from "@/lib/rckt/useAppStore";
-import { createTeamUser, deleteTeamUser } from "@/lib/admin.functions";
+import { AREAS } from "@/lib/rckt/types";
+import { createTeamUser, deleteTeamUser, updateUserCargo } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -49,12 +58,20 @@ function AdminPage() {
   const navigate = useNavigate();
   const createUser = useServerFn(createTeamUser);
   const deleteUser = useServerFn(deleteTeamUser);
+  const saveCargo = useServerFn(updateUserCargo);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"admin" | "colaborador">("colaborador");
+  const [cargo, setCargo] = useState<string>(AREAS[0]);
   const [saving, setSaving] = useState(false);
+
+  const [editing, setEditing] = useState<{ id: string; nombre: string; cargo: string } | null>(
+    null,
+  );
+  const [editCargo, setEditCargo] = useState<string>(AREAS[0]);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   if (!store.hydrated) return <div className="min-h-screen" />;
 
