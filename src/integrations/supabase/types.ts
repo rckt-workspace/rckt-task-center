@@ -136,6 +136,7 @@ export type Database = {
       task_comments: {
         Row: {
           author_id: string
+          author_name: string
           body: string
           created_at: string
           id: string
@@ -143,6 +144,7 @@ export type Database = {
         }
         Insert: {
           author_id: string
+          author_name?: string
           body: string
           created_at?: string
           id?: string
@@ -150,6 +152,7 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          author_name?: string
           body?: string
           created_at?: string
           id?: string
