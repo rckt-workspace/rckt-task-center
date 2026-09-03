@@ -119,14 +119,17 @@ export function TaskDialog({
         const type = rec.mimeType || "audio/webm";
         const ext = type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm";
         const blob = new Blob(chunksRef.current, { type });
-        if (blob.size > 0) {
-          const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
-          const file = new File([blob], `nota-de-voz-${stamp}.${ext}`, { type });
-          setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, file] }));
-        }
-        setRecording(false);
-        setRecSeconds(0);
         recorderRef.current = null;
+        // Defer state updates so React no reconcilia mientras el evento nativo sigue despachándose
+        window.setTimeout(() => {
+          if (blob.size > 0) {
+            const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+            const file = new File([blob], `nota-de-voz-${stamp}.${ext}`, { type });
+            setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, file] }));
+          }
+          setRecording(false);
+          setRecSeconds(0);
+        }, 0);
       };
       recorderRef.current = rec;
       rec.start();
