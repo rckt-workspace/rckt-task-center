@@ -167,11 +167,12 @@ export function useAppStore() {
       setHydrated(true);
       return;
     }
-    const [rolesRes, profilesRes, tasksRes, pointsRes] = await Promise.all([
+    const [rolesRes, profilesRes, tasksRes, pointsRes, attachRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
       supabase.from("tasks").select("*").order("fecha_limite"),
       supabase.from("attention_points").select("*").order("created_at"),
+      supabase.from("task_attachments").select("*").order("created_at"),
     ]);
     setIsAdmin((rolesRes.data ?? []).some((r) => r.role === "admin"));
     setProfiles(
@@ -184,6 +185,7 @@ export function useAppStore() {
     );
     setTaskRows((tasksRes.data ?? []) as TaskRow[]);
     setPointRows((pointsRes.data ?? []) as PointRow[]);
+    setAttachmentRows((attachRes.data ?? []) as AttachmentRow[]);
     setHydrated(true);
   }, [userId]);
 
