@@ -42,6 +42,8 @@ interface Props {
   colaboradores?: string[] | undefined;
   /** Mapa nombre → cargo para mostrar el cargo junto al nombre */
   cargos?: Record<string, string> | undefined;
+  /** Nombre del usuario actual, usado como autor en comentarios */
+  currentUserName?: string | undefined;
   onSubmit: (values: TaskInput) => void;
 }
 
