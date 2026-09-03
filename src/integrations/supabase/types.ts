@@ -92,12 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      task_attachments: {
+        Row: {
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          path: string
+          size: number
+          task_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime?: string
+          name: string
+          path: string
+          size?: number
+          task_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          path?: string
+          size?: number
+          task_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           area: string
           assigned_to: string
           cliente: string
           created_at: string
+          enlaces: string[]
           estado: string
           fecha_entrega: string | null
           fecha_limite: string
@@ -113,6 +155,7 @@ export type Database = {
           assigned_to: string
           cliente: string
           created_at?: string
+          enlaces?: string[]
           estado?: string
           fecha_entrega?: string | null
           fecha_limite: string
@@ -128,6 +171,7 @@ export type Database = {
           assigned_to?: string
           cliente?: string
           created_at?: string
+          enlaces?: string[]
           estado?: string
           fecha_entrega?: string | null
           fecha_limite?: string
@@ -174,6 +218,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_task: { Args: { _task_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -44,6 +44,17 @@ export interface Perfil {
   cargo: string;
 }
 
+export interface Attachment {
+  id: string;
+  taskId: string;
+  name: string;
+  /** Ruta dentro del bucket task-attachments */
+  path: string;
+  mime: string;
+  size: number;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   /** Lunes de la semana, formato ISO yyyy-MM-dd */
@@ -63,6 +74,9 @@ export interface Task {
   /** yyyy-MM-dd | null */
   fechaEntrega: string | null;
   observaciones: string;
+  /** URLs externas (Drive, Figma, Canva, ...) */
+  enlaces: string[];
+  adjuntos: Attachment[];
   createdAt: string;
   updatedAt: string;
 }

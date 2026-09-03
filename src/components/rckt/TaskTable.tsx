@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
+import { TaskAttachments } from "./TaskAttachments";
 import { formatCO, formatFechaHora, isOverdue, weekLabel } from "@/lib/rckt/dates";
 import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
               <TableHead>Fecha límite</TableHead>
               <TableHead>Fecha de entrega</TableHead>
               <TableHead className="min-w-[180px]">Observaciones</TableHead>
+              <TableHead className="min-w-[160px]">Adjuntos</TableHead>
               <TableHead className="w-[90px] text-right">Acción</TableHead>
             </TableRow>
           </TableHeader>
@@ -82,6 +84,9 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   <TableCell className="whitespace-nowrap">{formatCO(t.fechaEntrega)}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {t.observaciones || "—"}
+                  </TableCell>
+                  <TableCell className="max-w-[220px]">
+                    <TaskAttachments adjuntos={t.adjuntos} enlaces={t.enlaces} />
                   </TableCell>
                   <TableCell className="text-right whitespace-nowrap">
                     <Button
@@ -169,6 +174,12 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                 <p className="mt-3 border-t border-border pt-2 text-sm text-muted-foreground">
                   {t.observaciones}
                 </p>
+              ) : null}
+              {t.adjuntos.length > 0 || t.enlaces.length > 0 ? (
+                <div className="mt-3 border-t border-border pt-2">
+                  <p className="mb-1 text-xs text-muted-foreground">Adjuntos y enlaces</p>
+                  <TaskAttachments adjuntos={t.adjuntos} enlaces={t.enlaces} />
+                </div>
               ) : null}
             </article>
           );

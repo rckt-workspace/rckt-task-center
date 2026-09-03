@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link2, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,12 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DateField } from "./DateField";
+import { fileIcon, formatSize } from "./TaskAttachments";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
 import type { TaskInput } from "@/lib/rckt/useAppStore";
 
 type Mode = "create" | "edit";
+
+const ACCEPT =
+  "image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 interface Props {
   open: boolean;
@@ -50,6 +55,9 @@ const emptyValues = (colaborador?: Colaborador): TaskInput => ({
   horaLimite: null,
   fechaEntrega: null,
   observaciones: "",
+  enlaces: [],
+  nuevosArchivos: [],
+  eliminarAdjuntos: [],
 });
 
 export function TaskDialog({
@@ -65,10 +73,15 @@ export function TaskDialog({
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
   const [error, setError] = useState<string | null>(null);
+  const [linkDraft, setLinkDraft] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setError(null);
+    setLinkDraft("");
+    setLinkError(null);
     const areaFromCargo = (nombre: string, fallback: Area): Area => {
       const cargo = cargos?.[nombre];
       return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
@@ -84,6 +97,9 @@ export function TaskDialog({
         horaLimite: task.horaLimite,
         fechaEntrega: task.fechaEntrega,
         observaciones: task.observaciones,
+        enlaces: [...task.enlaces],
+        nuevosArchivos: [],
+        eliminarAdjuntos: [],
       });
     } else {
       const base = emptyValues(defaultColaborador);
@@ -91,6 +107,28 @@ export function TaskDialog({
       setV(base);
     }
   }, [open, task, defaultColaborador, cargos]);
+
+  const existingAdjuntos = (task?.adjuntos ?? []).filter((a) => !v.eliminarAdjuntos.includes(a.id));
+
+  const addLink = () => {
+    let raw = linkDraft.trim();
+    if (!raw) return;
+    if (!/^https?:\/\//i.test(raw)) raw = `https://${raw}`;
+    try {
+      const u = new URL(raw);
+      if (!u.hostname.includes(".")) throw new Error();
+    } catch {
+      setLinkError("Ingresa una URL válida (ej. https://drive.google.com/…).");
+      return;
+    }
+    if (v.enlaces.includes(raw)) {
+      setLinkError("Ese enlace ya está agregado.");
+      return;
+    }
+    setV((prev) => ({ ...prev, enlaces: [...prev.enlaces, raw] }));
+    setLinkDraft("");
+    setLinkError(null);
+  };
 
   const setEstado = (estado: Estado) => {
     setV((prev) => ({
@@ -110,7 +148,14 @@ export function TaskDialog({
       setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
       return;
     }
-    onSubmit({ ...v, tarea: v.tarea.trim() });
+    // Si quedó un enlace escrito sin agregar, lo incluimos automáticamente
+    const enlaces = [...v.enlaces];
+    const pending = linkDraft.trim();
+    if (pending) {
+      const normalized = /^https?:\/\//i.test(pending) ? pending : `https://${pending}`;
+      if (!enlaces.includes(normalized)) enlaces.push(normalized);
+    }
+    onSubmit({ ...v, enlaces, tarea: v.tarea.trim() });
     onOpenChange(false);
   };
 
@@ -277,6 +322,147 @@ export function TaskDialog({
               onChange={(e) => setV({ ...v, observaciones: e.target.value })}
               placeholder="Notas, bloqueos o contexto"
             />
+          </div>
+
+          {/* Adjuntos */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Adjuntos</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPT}
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                if (files.length) setV((prev) => ({ ...prev, nuevosArchivos: [...prev.nuevosArchivos, ...files] }));
+                e.target.value = "";
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="size-3.5" />
+              Subir archivos
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Imágenes, videos, PDF, Word y Excel. Puedes seleccionar varios a la vez (máx. 50 MB c/u).
+            </p>
+            {existingAdjuntos.length > 0 || v.nuevosArchivos.length > 0 ? (
+              <ul className="divide-y divide-border rounded-md border border-border bg-background">
+                {existingAdjuntos.map((a) => {
+                  const Icon = fileIcon(a.mime);
+                  return (
+                    <li key={a.id} className="flex items-center gap-2 px-3 py-2 text-sm">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate">{a.name}</span>
+                      <span className="text-xs text-muted-foreground">{formatSize(a.size)}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label="Quitar adjunto"
+                        onClick={() =>
+                          setV((prev) => ({ ...prev, eliminarAdjuntos: [...prev.eliminarAdjuntos, a.id] }))
+                        }
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    </li>
+                  );
+                })}
+                {v.nuevosArchivos.map((f, i) => {
+                  const Icon = fileIcon(f.type);
+                  return (
+                    <li key={`${f.name}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                      <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase">
+                        Nuevo
+                      </span>
+                      <span className="text-xs text-muted-foreground">{formatSize(f.size)}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label="Quitar archivo"
+                        onClick={() =>
+                          setV((prev) => ({
+                            ...prev,
+                            nuevosArchivos: prev.nuevosArchivos.filter((_, j) => j !== i),
+                          }))
+                        }
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </div>
+
+          {/* Enlaces */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Enlaces</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="url"
+                placeholder="https://drive.google.com/… · Figma · Canva"
+                value={linkDraft}
+                onChange={(e) => {
+                  setLinkDraft(e.target.value);
+                  setLinkError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addLink();
+                  }
+                }}
+              />
+              <Button type="button" variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={addLink}>
+                <Plus className="size-3.5" />
+                Agregar enlace
+              </Button>
+            </div>
+            {linkError ? <p className="text-xs text-destructive">{linkError}</p> : null}
+            {v.enlaces.length > 0 ? (
+              <ul className="divide-y divide-border rounded-md border border-border bg-background">
+                {v.enlaces.map((url, i) => (
+                  <li key={`${url}-${i}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <Link2 className="size-4 shrink-0 text-muted-foreground" />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-w-0 flex-1 truncate text-primary hover:underline"
+                      title={url}
+                    >
+                      {url}
+                    </a>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label="Quitar enlace"
+                      onClick={() =>
+                        setV((prev) => ({ ...prev, enlaces: prev.enlaces.filter((_, j) => j !== i) }))
+                      }
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </div>
 
