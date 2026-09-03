@@ -216,6 +216,18 @@ export function useAppStore() {
         horaLimite: r.hora_limite,
         fechaEntrega: r.fecha_entrega,
         observaciones: r.observaciones,
+        enlaces: r.enlaces ?? [],
+        adjuntos: attachmentRows
+          .filter((a) => a.task_id === r.id)
+          .map((a) => ({
+            id: a.id,
+            taskId: a.task_id,
+            name: a.name,
+            path: a.path,
+            mime: a.mime,
+            size: a.size,
+            createdAt: a.created_at,
+          })),
         createdAt: r.created_at,
         updatedAt: r.updated_at,
       })),
@@ -233,7 +245,7 @@ export function useAppStore() {
       })),
       semanas,
     }),
-    [taskRows, pointRows, semanas, nameOf],
+    [taskRows, attachmentRows, pointRows, semanas, nameOf],
   );
 
   const perfil = useMemo(
