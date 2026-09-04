@@ -91,7 +91,8 @@ function DownloadRow({ a }: { a: Attachment }) {
 }
 
 /** Detalle completo de una tarea (solo lectura) con adjuntos, audio, enlaces y comentarios. */
-export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUserName, onEdit }: Props) {
+export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUserName, onEdit, onChangeEstado }: Props) {
+  const [savingEstado, setSavingEstado] = useState(false);
   if (!task) return null;
   const overdue = isOverdue(task.fechaLimite, task.estado);
   const audios = task.adjuntos.filter((a) => isAudio(a.mime, a.name));
