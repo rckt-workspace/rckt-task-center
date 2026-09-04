@@ -742,20 +742,7 @@ function Dashboard() {
               }
             : undefined
         }
-        onChangeEstado={
-          isCoord
-            ? undefined
-            : async (t, estado) => {
-                try {
-                  await store.updateTask(t.id, { estado });
-                  toast.success(
-                    estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
-                  );
-                } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
-                }
-              }
-        }
+        onChangeEstado={isCoord ? undefined : changeEstado}
       />
 
       <AttentionDialog
