@@ -365,9 +365,20 @@ function Dashboard() {
             value={semana}
             onChange={(v) => {
               setHistorico(false);
+              setSoloHoy(false);
               setSemana(v);
             }}
           />
+          <Button
+            variant={soloHoy ? "default" : "outline"}
+            size="sm"
+            className="gap-1.5"
+            aria-pressed={soloHoy}
+            onClick={() => setSoloHoy((h) => !h)}
+          >
+            <CalendarClock className="size-3.5" />
+            {soloHoy ? "Ver toda la semana" : "Hoy"}
+          </Button>
           {isCoord ? (
             <Button
               variant={historico ? "default" : "outline"}
