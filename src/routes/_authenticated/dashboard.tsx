@@ -590,28 +590,37 @@ function Dashboard() {
               </Button>
             </div>
           ) : null}
-          <TaskTable
-            tasks={weekTasks}
-            showColaborador={isCoord}
-            showSemana={historico}
-            onEdit={
-              isCoord
-                ? (t) => {
-                    setEditing(t);
-                    setDialogOpen(true);
-                  }
-                : undefined
-            }
-            onOpen={(t) => setViewing(t)}
-            onDelete={
-              isCoord
-                ? (t) => {
-                    setDeleting(t);
-                    setConfirmTaskOpen(true);
-                  }
-                : undefined
-            }
-          />
+          {vista === "tablero" ? (
+            <KanbanBoard
+              tasks={weekTasks}
+              showColaborador={isCoord}
+              onOpen={(t) => setViewing(t)}
+              onChangeEstado={changeEstado}
+            />
+          ) : (
+            <TaskTable
+              tasks={weekTasks}
+              showColaborador={isCoord}
+              showSemana={historico}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
+              onOpen={(t) => setViewing(t)}
+              onDelete={
+                isCoord
+                  ? (t) => {
+                      setDeleting(t);
+                      setConfirmTaskOpen(true);
+                    }
+                  : undefined
+              }
+            />
+          )}
         </section>
 
         {!isCoord && upcomingTasks.length > 0 ? (
