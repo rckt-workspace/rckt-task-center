@@ -41,16 +41,22 @@ export function LoginNotices({ userId, isAdmin, tasks, hydrated, onOpenTask, onG
     if (typeof window === "undefined") return;
     const key = noticeSessionKey(userId);
     if (window.sessionStorage.getItem(key)) return;
-    window.sessionStorage.setItem(key, "1");
 
     let alive = true;
     (async () => {
-      const { data: prof } = await supabase
+      const { data: prof, error } = await supabase
         .from("profiles")
         .select("tasks_seen_at, comments_seen_at")
         .eq("id", userId)
         .maybeSingle();
       if (!alive) return;
+      if (error) {
+        console.warn("No se pudo comprobar avisos de inicio de sesión:", error.message);
+        return;
+      }
+      // Solo marcamos como revisado cuando la comprobación se completó con datos reales.
+      window.sessionStorage.setItem(key, "1");
+
 
       if (!isAdmin) {
         const since = prof?.tasks_seen_at ?? EPOCH;
