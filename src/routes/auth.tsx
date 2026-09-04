@@ -68,6 +68,14 @@ function AuthPage() {
       setError("Correo o contraseña incorrectos.");
       return;
     }
+    // Nuevo inicio de sesión: reinicia las marcas de avisos ya mostrados en esta pestaña.
+    try {
+      Object.keys(window.sessionStorage)
+        .filter((k) => k.startsWith("rckt-notice-checked-"))
+        .forEach((k) => window.sessionStorage.removeItem(k));
+    } catch {
+      /* noop */
+    }
     void navigate({ to: "/dashboard", replace: true });
   };
 
