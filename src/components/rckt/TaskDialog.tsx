@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
+import { BookmarkPlus, LayoutTemplate, Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
+import type { TaskTemplate, TaskTemplateInput } from "@/lib/rckt/useTaskTemplates";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
