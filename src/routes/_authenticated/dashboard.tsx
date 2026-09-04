@@ -661,7 +661,7 @@ function Dashboard() {
           userId={store.session.user.id}
           isAdmin={isCoord}
           tasks={store.data.tasks}
-          hydrated={store.hydrated}
+          hydrated={store.loadedFor === store.session.user.id}
           onOpenTask={(t) => {
             if (!historico && t.semana !== semana) setSemana(t.semana);
             setViewing(t);

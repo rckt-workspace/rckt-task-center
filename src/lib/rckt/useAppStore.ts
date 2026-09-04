@@ -161,6 +161,8 @@ export function useAppStore() {
   const [attachmentRows, setAttachmentRows] = useState<AttachmentRow[]>([]);
   const [semanas, setSemanas] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  /** ID del usuario para el que se completó la última carga de datos (null = sin sesión). */
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     setSemanas(loadSemanas());
@@ -178,6 +180,7 @@ export function useAppStore() {
       setProfiles([]);
       setIsAdmin(false);
       setHydrated(true);
+      setLoadedFor(null);
       return;
     }
     const [rolesRes, profilesRes, tasksRes, pointsRes, attachRes] = await Promise.all([
@@ -200,6 +203,7 @@ export function useAppStore() {
     setPointRows((pointsRes.data ?? []) as PointRow[]);
     setAttachmentRows((attachRes.data ?? []) as AttachmentRow[]);
     setHydrated(true);
+    setLoadedFor(userId);
   }, [userId]);
 
   useEffect(() => {
@@ -442,6 +446,7 @@ export function useAppStore() {
     isAdmin,
     session,
     hydrated,
+    loadedFor,
     refresh,
     createTask,
     updateTask,
