@@ -6,9 +6,9 @@ import { User } from "lucide-react";
 interface Props {
   profiles: Perfil[];
   tasks: Task[];
-  currentUserId?: string;
-  selected?: string | null;
-  onSelect?: (value: string | null) => void;
+  currentUserId?: string | undefined;
+  selected?: string | null | undefined;
+  onSelect?: ((value: string | null) => void) | undefined;
 }
 
 export function WorkloadWidget({
