@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Pencil, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, LayoutTemplate, Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAppStore } from "@/lib/rckt/useAppStore";
+import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { AREAS } from "@/lib/rckt/types";
 import { createTeamUser, deleteTeamUser, updateUserCargo } from "@/lib/admin.functions";
 
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminPage() {
   const store = useAppStore();
+  const templatesApi = useTaskTemplates(store.isAdmin);
   const navigate = useNavigate();
   const createUser = useServerFn(createTeamUser);
   const deleteUser = useServerFn(deleteTeamUser);
