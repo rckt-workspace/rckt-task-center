@@ -237,7 +237,7 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
         </div>
 
         <DialogFooter>
-          {onEdit ? (
+          {isAdmin && onEdit ? (
             <Button
               variant="outline"
               className="gap-2"
@@ -247,7 +247,7 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
               }}
             >
               <Pencil className="size-4" />
-              {isAdmin ? "Editar tarea" : "Actualizar estado"}
+              Editar tarea
             </Button>
           ) : null}
           <Button onClick={() => onOpenChange(false)}>Cerrar</Button>
