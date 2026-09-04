@@ -7,6 +7,8 @@ import {
   FileSpreadsheet,
   Filter,
   History as HistoryIcon,
+  LayoutGrid,
+  List,
   LogOut,
   Plus,
   Users,
@@ -33,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
+import { KanbanBoard } from "@/components/rckt/KanbanBoard";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
@@ -51,7 +54,7 @@ import {
   exportTasksExcel,
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, todayISO, weekLabel } from "@/lib/rckt/dates";
-import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Task } from "@/lib/rckt/types";
+import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -95,6 +98,18 @@ function Dashboard() {
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
   const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
+  const [vista, setVista] = useState<"lista" | "tablero">("lista");
+
+  const changeEstado = async (t: Task, estado: Estado) => {
+    try {
+      await store.updateTask(t.id, { estado });
+      toast.success(
+        estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
+    }
+  };
 
   const isCoord = store.isAdmin;
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
@@ -300,6 +315,34 @@ function Dashboard() {
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
         <section className="flex flex-wrap items-center gap-3">
+          <div
+            role="group"
+            aria-label="Modo de vista"
+            className="inline-flex rounded-md border border-border bg-card p-0.5"
+          >
+            <Button
+              type="button"
+              variant={vista === "lista" ? "default" : "ghost"}
+              size="sm"
+              className="gap-1.5"
+              aria-pressed={vista === "lista"}
+              onClick={() => setVista("lista")}
+            >
+              <List className="size-3.5" />
+              Vista lista
+            </Button>
+            <Button
+              type="button"
+              variant={vista === "tablero" ? "default" : "ghost"}
+              size="sm"
+              className="gap-1.5"
+              aria-pressed={vista === "tablero"}
+              onClick={() => setVista("tablero")}
+            >
+              <LayoutGrid className="size-3.5" />
+              Vista tablero
+            </Button>
+          </div>
           <WeekPicker
             value={semana}
             onChange={(v) => {
@@ -590,28 +633,37 @@ function Dashboard() {
               </Button>
             </div>
           ) : null}
-          <TaskTable
-            tasks={weekTasks}
-            showColaborador={isCoord}
-            showSemana={historico}
-            onEdit={
-              isCoord
-                ? (t) => {
-                    setEditing(t);
-                    setDialogOpen(true);
-                  }
-                : undefined
-            }
-            onOpen={(t) => setViewing(t)}
-            onDelete={
-              isCoord
-                ? (t) => {
-                    setDeleting(t);
-                    setConfirmTaskOpen(true);
-                  }
-                : undefined
-            }
-          />
+          {vista === "tablero" ? (
+            <KanbanBoard
+              tasks={weekTasks}
+              showColaborador={isCoord}
+              onOpen={(t) => setViewing(t)}
+              onChangeEstado={changeEstado}
+            />
+          ) : (
+            <TaskTable
+              tasks={weekTasks}
+              showColaborador={isCoord}
+              showSemana={historico}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
+              onOpen={(t) => setViewing(t)}
+              onDelete={
+                isCoord
+                  ? (t) => {
+                      setDeleting(t);
+                      setConfirmTaskOpen(true);
+                    }
+                  : undefined
+              }
+            />
+          )}
         </section>
 
         {!isCoord && upcomingTasks.length > 0 ? (
@@ -690,20 +742,7 @@ function Dashboard() {
               }
             : undefined
         }
-        onChangeEstado={
-          isCoord
-            ? undefined
-            : async (t, estado) => {
-                try {
-                  await store.updateTask(t.id, { estado });
-                  toast.success(
-                    estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
-                  );
-                } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
-                }
-              }
-        }
+        onChangeEstado={isCoord ? undefined : changeEstado}
       />
 
       <AttentionDialog
