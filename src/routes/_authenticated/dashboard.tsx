@@ -674,16 +674,16 @@ function Dashboard() {
           ) : null}
           {vista === "tablero" ? (
             <KanbanBoard
-              tasks={weekTasks}
+              tasks={visibleTasks}
               showColaborador={isCoord}
               onOpen={(t) => setViewing(t)}
               onChangeEstado={changeEstado}
             />
           ) : (
             <TaskTable
-              tasks={weekTasks}
+              tasks={visibleTasks}
               showColaborador={isCoord}
-              showSemana={historico}
+              showSemana={historico || soloHoy}
               onEdit={
                 isCoord
                   ? (t) => {
@@ -705,7 +705,7 @@ function Dashboard() {
           )}
         </section>
 
-        {!isCoord && upcomingTasks.length > 0 ? (
+        {!soloHoy && !isCoord && upcomingTasks.length > 0 ? (
           <section>
             <h2 className="mb-1 text-base font-semibold">
               Próximas semanas ({upcomingTasks.length})
