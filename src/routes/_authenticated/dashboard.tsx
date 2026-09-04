@@ -300,6 +300,34 @@ function Dashboard() {
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
         <section className="flex flex-wrap items-center gap-3">
+          <div
+            role="group"
+            aria-label="Modo de vista"
+            className="inline-flex rounded-md border border-border bg-card p-0.5"
+          >
+            <Button
+              type="button"
+              variant={vista === "lista" ? "default" : "ghost"}
+              size="sm"
+              className="gap-1.5"
+              aria-pressed={vista === "lista"}
+              onClick={() => setVista("lista")}
+            >
+              <List className="size-3.5" />
+              Vista lista
+            </Button>
+            <Button
+              type="button"
+              variant={vista === "tablero" ? "default" : "ghost"}
+              size="sm"
+              className="gap-1.5"
+              aria-pressed={vista === "tablero"}
+              onClick={() => setVista("tablero")}
+            >
+              <LayoutGrid className="size-3.5" />
+              Vista tablero
+            </Button>
+          </div>
           <WeekPicker
             value={semana}
             onChange={(v) => {
