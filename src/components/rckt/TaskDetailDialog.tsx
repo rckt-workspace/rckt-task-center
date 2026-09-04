@@ -10,13 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EstadoBadge } from "./EstadoBadge";
 import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { getAttachmentDownloadUrl } from "@/lib/rckt/useAppStore";
 import { formatCO, formatFechaHora, isOverdue, weekLabel } from "@/lib/rckt/dates";
-import type { Attachment, Task } from "@/lib/rckt/types";
+import { ESTADOS } from "@/lib/rckt/types";
+import type { Attachment, Estado, Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -25,7 +33,10 @@ interface Props {
   task: Task | null;
   isAdmin: boolean;
   currentUserName: string;
+  /** Solo admin: abre el formulario de edición completa */
   onEdit?: ((task: Task) => void) | undefined;
+  /** Colaborador: cambiar únicamente el estado de la tarea */
+  onChangeEstado?: ((task: Task, estado: Estado) => void | Promise<void>) | undefined;
 }
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
@@ -80,7 +91,8 @@ function DownloadRow({ a }: { a: Attachment }) {
 }
 
 /** Detalle completo de una tarea (solo lectura) con adjuntos, audio, enlaces y comentarios. */
-export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUserName, onEdit }: Props) {
+export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUserName, onEdit, onChangeEstado }: Props) {
+  const [savingEstado, setSavingEstado] = useState(false);
   if (!task) return null;
   const overdue = isOverdue(task.fechaLimite, task.estado);
   const audios = task.adjuntos.filter((a) => isAudio(a.mime, a.name));
@@ -115,7 +127,35 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
               </span>
             </Field>
             <Field label="Fecha de entrega">{formatCO(task.fechaEntrega)}</Field>
-            <Field label="Estado">{task.estado}</Field>
+            <Field label="Estado">
+              {!isAdmin && onChangeEstado ? (
+                <Select
+                  value={task.estado}
+                  disabled={savingEstado}
+                  onValueChange={async (x) => {
+                    setSavingEstado(true);
+                    try {
+                      await onChangeEstado(task, x as Estado);
+                    } finally {
+                      setSavingEstado(false);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESTADOS.map((e) => (
+                      <SelectItem key={e} value={e}>
+                        {e}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                task.estado
+              )}
+            </Field>
           </dl>
 
           <section>
@@ -197,7 +237,7 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
         </div>
 
         <DialogFooter>
-          {onEdit ? (
+          {isAdmin && onEdit ? (
             <Button
               variant="outline"
               className="gap-2"
@@ -207,7 +247,7 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
               }}
             >
               <Pencil className="size-4" />
-              {isAdmin ? "Editar tarea" : "Actualizar estado"}
+              Editar tarea
             </Button>
           ) : null}
           <Button onClick={() => onOpenChange(false)}>Cerrar</Button>

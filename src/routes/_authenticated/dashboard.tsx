@@ -526,10 +526,14 @@ function Dashboard() {
               tasks={backlogTasks}
               showColaborador={false}
               showSemana
-              onEdit={(t) => {
-                setEditing(t);
-                setDialogOpen(true);
-              }}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
               onOpen={(t) => setViewing(t)}
             />
           </section>
@@ -562,10 +566,14 @@ function Dashboard() {
             tasks={weekTasks}
             showColaborador={isCoord}
             showSemana={historico}
-            onEdit={(t) => {
-              setEditing(t);
-              setDialogOpen(true);
-            }}
+            onEdit={
+              isCoord
+                ? (t) => {
+                    setEditing(t);
+                    setDialogOpen(true);
+                  }
+                : undefined
+            }
             onOpen={(t) => setViewing(t)}
             onDelete={
               isCoord
@@ -590,10 +598,14 @@ function Dashboard() {
               tasks={upcomingTasks}
               showColaborador={false}
               showSemana
-              onEdit={(t) => {
-                setEditing(t);
-                setDialogOpen(true);
-              }}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
               onOpen={(t) => setViewing(t)}
             />
           </section>
@@ -642,10 +654,28 @@ function Dashboard() {
         task={viewing ? (store.data.tasks.find((t) => t.id === viewing.id) ?? viewing) : null}
         isAdmin={isCoord}
         currentUserName={nombre}
-        onEdit={(t) => {
-          setEditing(t);
-          setDialogOpen(true);
-        }}
+        onEdit={
+          isCoord
+            ? (t) => {
+                setEditing(t);
+                setDialogOpen(true);
+              }
+            : undefined
+        }
+        onChangeEstado={
+          isCoord
+            ? undefined
+            : async (t, estado) => {
+                try {
+                  await store.updateTask(t.id, { estado });
+                  toast.success(
+                    estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
+                  );
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
+                }
+              }
+        }
       />
 
       <AttentionDialog

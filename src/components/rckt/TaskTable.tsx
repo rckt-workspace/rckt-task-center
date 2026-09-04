@@ -18,7 +18,7 @@ interface Props {
   tasks: Task[];
   showColaborador?: boolean | undefined;
   showSemana?: boolean | undefined;
-  onEdit: (task: Task) => void;
+  onEdit?: ((task: Task) => void) | undefined;
   onOpen?: ((task: Task) => void) | undefined;
   onDelete?: ((task: Task) => void) | undefined;
 }
@@ -101,14 +101,16 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                         Abrir tarea
                       </Button>
                     ) : null}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Editar tarea"
-                      onClick={() => onEdit(t)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
+                    {onEdit ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Editar tarea"
+                        onClick={() => onEdit(t)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                    ) : null}
                     {onDelete ? (
                       <Button
                         variant="ghost"
@@ -144,14 +146,16 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   <EstadoBadge estado={t.estado} />
                 </div>
                 <div className="-mt-1 -mr-2 flex">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Editar tarea"
-                    onClick={() => onEdit(t)}
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
+                  {onEdit ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Editar tarea"
+                      onClick={() => onEdit(t)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  ) : null}
                   {onDelete ? (
                     <Button
                       variant="ghost"
