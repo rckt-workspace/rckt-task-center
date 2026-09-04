@@ -95,6 +95,18 @@ function Dashboard() {
   const [deletingPunto, setDeletingPunto] = useState<AttentionPoint | null>(null);
   const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
+  const [vista, setVista] = useState<"lista" | "tablero">("lista");
+
+  const changeEstado = async (t: Task, estado: Estado) => {
+    try {
+      await store.updateTask(t.id, { estado });
+      toast.success(
+        estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
+    }
+  };
 
   const isCoord = store.isAdmin;
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
