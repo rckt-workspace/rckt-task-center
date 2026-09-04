@@ -598,7 +598,7 @@ function Dashboard() {
           </section>
         ) : null}
 
-        {backlogTasks.length > 0 ? (
+        {!soloHoy && backlogTasks.length > 0 ? (
           <section
             id="tareas-atrasadas"
             className="rounded-xl border border-warn/40 bg-warn-soft p-4 shadow-panel"
