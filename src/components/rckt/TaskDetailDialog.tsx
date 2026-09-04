@@ -127,7 +127,35 @@ export function TaskDetailDialog({ open, onOpenChange, task, isAdmin, currentUse
               </span>
             </Field>
             <Field label="Fecha de entrega">{formatCO(task.fechaEntrega)}</Field>
-            <Field label="Estado">{task.estado}</Field>
+            <Field label="Estado">
+              {!isAdmin && onChangeEstado ? (
+                <Select
+                  value={task.estado}
+                  disabled={savingEstado}
+                  onValueChange={async (x) => {
+                    setSavingEstado(true);
+                    try {
+                      await onChangeEstado(task, x as Estado);
+                    } finally {
+                      setSavingEstado(false);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESTADOS.map((e) => (
+                      <SelectItem key={e} value={e}>
+                        {e}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                task.estado
+              )}
+            </Field>
           </dl>
 
           <section>
