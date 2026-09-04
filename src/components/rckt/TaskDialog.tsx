@@ -90,11 +90,17 @@ export function TaskDialog({
   cargos,
   currentUserName,
   onSubmit,
+  templates = [],
+  onSaveTemplate,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
   const [error, setError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [templateName, setTemplateName] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateMsg, setTemplateMsg] = useState<string | null>(null);
+  const [showTemplateForm, setShowTemplateForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
