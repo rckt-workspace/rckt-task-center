@@ -36,7 +36,7 @@ interface Props {
   /** Solo admin: abre el formulario de edición completa */
   onEdit?: ((task: Task) => void) | undefined;
   /** Colaborador: cambiar únicamente el estado de la tarea */
-  onChangeEstado?: ((task: Task, estado: Estado) => void) | undefined;
+  onChangeEstado?: ((task: Task, estado: Estado) => void | Promise<void>) | undefined;
 }
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
