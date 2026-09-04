@@ -533,6 +533,18 @@ function Dashboard() {
         ) : null}
 
         {isCoord ? (
+          <section className="max-w-xl">
+            <WorkloadWidget
+              profiles={store.profiles}
+              tasks={store.data.tasks}
+              currentUserId={store.session?.user.id}
+              selected={fColab === ALL ? null : fColab}
+              onSelect={(v) => setFColab(v ?? ALL)}
+            />
+          </section>
+        ) : null}
+
+        {isCoord ? (
           <AttentionPoints
             puntos={puntos}
             tasks={store.data.tasks}
