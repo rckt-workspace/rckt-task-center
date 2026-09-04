@@ -43,6 +43,7 @@ import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
 import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
+import { WorkloadWidget } from "@/components/rckt/WorkloadWidget";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -525,6 +526,18 @@ function Dashboard() {
               title="Resumen por colaborador"
               tasks={scopeTasks}
               field="colaborador"
+              selected={fColab === ALL ? null : fColab}
+              onSelect={(v) => setFColab(v ?? ALL)}
+            />
+          </section>
+        ) : null}
+
+        {isCoord ? (
+          <section className="max-w-xl">
+            <WorkloadWidget
+              profiles={store.profiles}
+              tasks={store.data.tasks}
+              currentUserId={store.session?.user.id}
               selected={fColab === ALL ? null : fColab}
               onSelect={(v) => setFColab(v ?? ALL)}
             />
