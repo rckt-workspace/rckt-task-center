@@ -229,6 +229,42 @@ export type Database = {
           },
         ]
       }
+      task_templates: {
+        Row: {
+          area: string
+          cliente: string
+          created_at: string
+          created_by: string | null
+          enlaces: string[]
+          id: string
+          nombre: string
+          observaciones: string
+          tarea: string
+        }
+        Insert: {
+          area: string
+          cliente: string
+          created_at?: string
+          created_by?: string | null
+          enlaces?: string[]
+          id?: string
+          nombre: string
+          observaciones?: string
+          tarea: string
+        }
+        Update: {
+          area?: string
+          cliente?: string
+          created_at?: string
+          created_by?: string | null
+          enlaces?: string[]
+          id?: string
+          nombre?: string
+          observaciones?: string
+          tarea?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           area: string
