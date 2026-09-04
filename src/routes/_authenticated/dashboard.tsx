@@ -128,13 +128,28 @@ function Dashboard() {
     [store.data.puntos, semana, historico],
   );
 
+  // Tareas atrasadas: siguen Pendiente/En curso y son de una semana anterior
+  // a la actual o su fecha límite ya pasó. Se excluyen las que ya están en la
+  // lista principal (misma semana seleccionada) para no duplicar. Ambos roles.
   const backlogTasks = useMemo(() => {
-    if (isCoord) return [];
+    if (historico) return [];
     const current = currentWeekISO();
-    return store.data.tasks
-      .filter((t) => t.semana < current && t.estado !== "Completada")
-      .sort((a, b) => (a.semana < b.semana ? -1 : 1));
-  }, [store.data.tasks, isCoord]);
+    const today = todayISO();
+    let list = store.data.tasks.filter(
+      (t) =>
+        t.estado !== "Completada" &&
+        t.semana !== semana &&
+        (t.semana < current || t.fechaLimite < today),
+    );
+    if (isCoord) {
+      if (fColab !== ALL) list = list.filter((t) => t.colaborador === fColab);
+      if (fCliente !== ALL) list = list.filter((t) => t.cliente === fCliente);
+      if (fArea !== ALL) list = list.filter((t) => t.area === fArea);
+    }
+    return list.sort((a, b) =>
+      a.fechaLimite === b.fechaLimite ? (a.semana < b.semana ? -1 : 1) : a.fechaLimite < b.fechaLimite ? -1 : 1,
+    );
+  }, [store.data.tasks, isCoord, historico, semana, fColab, fCliente, fArea]);
 
   const upcomingTasks = useMemo(() => {
     if (isCoord || historico) return [];
