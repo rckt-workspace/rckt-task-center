@@ -173,6 +173,9 @@ export function TaskDialog({
     setError(null);
     setLinkDraft("");
     setLinkError(null);
+    setTemplateName("");
+    setTemplateMsg(null);
+    setShowTemplateForm(false);
     const areaFromCargo = (nombre: string, fallback: Area): Area => {
       const cargo = cargos?.[nombre];
       return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
