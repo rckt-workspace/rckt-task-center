@@ -48,6 +48,10 @@ interface Props {
   /** Nombre del usuario actual, usado como autor en comentarios */
   currentUserName?: string | undefined;
   onSubmit: (values: TaskInput) => void;
+  /** Plantillas disponibles (solo admin) */
+  templates?: TaskTemplate[] | undefined;
+  /** Guardar la tarea actual como plantilla (solo admin) */
+  onSaveTemplate?: ((input: TaskTemplateInput) => Promise<void>) | undefined;
 }
 
 /** Previsualización con <audio> de un archivo de audio recién seleccionado/grabado (aún no subido). */
