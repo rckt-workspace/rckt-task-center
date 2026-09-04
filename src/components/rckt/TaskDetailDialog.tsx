@@ -10,13 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EstadoBadge } from "./EstadoBadge";
 import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { getAttachmentDownloadUrl } from "@/lib/rckt/useAppStore";
 import { formatCO, formatFechaHora, isOverdue, weekLabel } from "@/lib/rckt/dates";
-import type { Attachment, Task } from "@/lib/rckt/types";
+import { ESTADOS } from "@/lib/rckt/types";
+import type { Attachment, Estado, Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -25,7 +33,10 @@ interface Props {
   task: Task | null;
   isAdmin: boolean;
   currentUserName: string;
+  /** Solo admin: abre el formulario de edición completa */
   onEdit?: ((task: Task) => void) | undefined;
+  /** Colaborador: cambiar únicamente el estado de la tarea */
+  onChangeEstado?: ((task: Task, estado: Estado) => void) | undefined;
 }
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
