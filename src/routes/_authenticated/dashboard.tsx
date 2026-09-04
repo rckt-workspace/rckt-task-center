@@ -116,6 +116,7 @@ function Dashboard() {
   };
 
   const isCoord = store.isAdmin;
+  const templatesApi = useTaskTemplates(isCoord);
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
   const isPastWeek = !historico && semana < currentWeekISO();
   const colaboradores = useMemo(() => store.profiles.map((p) => p.nombre), [store.profiles]);
