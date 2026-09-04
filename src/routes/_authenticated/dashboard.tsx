@@ -45,10 +45,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
 import {
+  exportExecutivePDF,
   exportMyTasksExcel,
   exportMyTasksPDF,
   exportTasksExcel,
-  exportTasksPDF,
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Task } from "@/lib/rckt/types";
@@ -343,8 +343,8 @@ function Dashboard() {
                 size="sm"
                 className="gap-2"
                 onClick={() => {
-                  exportTasksPDF(scopeTasks, historico ? null : semana);
-                  toast.success("PDF exportado");
+                  exportExecutivePDF(scopeTasks, puntos, historico ? null : semana);
+                  toast.success("Reporte ejecutivo PDF exportado");
                 }}
               >
                 <FileDown className="size-3.5" />
