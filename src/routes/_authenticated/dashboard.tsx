@@ -7,6 +7,8 @@ import {
   FileSpreadsheet,
   Filter,
   History as HistoryIcon,
+  LayoutGrid,
+  List,
   LogOut,
   Plus,
   Users,
@@ -33,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
+import { KanbanBoard } from "@/components/rckt/KanbanBoard";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
@@ -51,7 +54,7 @@ import {
   exportTasksExcel,
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, todayISO, weekLabel } from "@/lib/rckt/dates";
-import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Task } from "@/lib/rckt/types";
+import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AlertTriangle, CalendarClock, GripVertical, User } from "lucide-react";
 import { EstadoBadge } from "./EstadoBadge";
 import { formatFechaHora, isOverdue } from "@/lib/rckt/dates";
-import { ESTADOS } from "@/lib/rckt/types";
+
 import type { Estado, Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
@@ -165,5 +165,3 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
     </div>
   );
 }
-
-export { ESTADOS as KANBAN_ESTADOS };
