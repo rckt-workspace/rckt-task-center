@@ -1,8 +1,8 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { formatFechaHora, sundayOfISO, toISO, weekLabel } from "@/lib/rckt/dates";
-import type { Task } from "@/lib/rckt/types";
+import { formatFechaHora, isOverdue, sundayOfISO, toISO, weekLabel } from "@/lib/rckt/dates";
+import type { AttentionPoint, Task } from "@/lib/rckt/types";
 
 const NAVY: [number, number, number] = [55, 42, 110]; // #372A6E
 const IVORY: [number, number, number] = [250, 247, 240]; // #FAF7F0
