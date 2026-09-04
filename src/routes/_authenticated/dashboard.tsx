@@ -526,20 +526,25 @@ function Dashboard() {
           </section>
         ) : null}
 
-        {!isCoord && backlogTasks.length > 0 ? (
-          <section className="rounded-xl border border-warn/40 bg-warn-soft p-4 shadow-panel">
+        {backlogTasks.length > 0 ? (
+          <section
+            id="tareas-atrasadas"
+            className="rounded-xl border border-warn/40 bg-warn-soft p-4 shadow-panel"
+          >
             <div className="mb-3 flex items-center gap-2">
               <AlertTriangle className="size-4 text-warn" />
               <h2 className="text-base font-semibold text-warn">
-                Tareas sin cerrar de semanas anteriores ({backlogTasks.length})
+                Tareas atrasadas de semanas anteriores ({backlogTasks.length})
               </h2>
             </div>
             <p className="mb-3 text-sm text-muted-foreground">
-              Estas tareas siguen pendientes o en curso. Actualízalas para sacarlas de esta lista.
+              {isCoord
+                ? "Tareas de semanas pasadas o con fecha límite vencida que siguen pendientes o en curso."
+                : "Estas tareas siguen pendientes o en curso. Actualízalas para sacarlas de esta lista."}
             </p>
             <TaskTable
               tasks={backlogTasks}
-              showColaborador={false}
+              showColaborador={isCoord}
               showSemana
               onEdit={
                 isCoord
@@ -550,6 +555,14 @@ function Dashboard() {
                   : undefined
               }
               onOpen={(t) => setViewing(t)}
+              onDelete={
+                isCoord
+                  ? (t) => {
+                      setDeleting(t);
+                      setConfirmTaskOpen(true);
+                    }
+                  : undefined
+              }
             />
           </section>
         ) : null}
