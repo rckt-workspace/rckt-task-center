@@ -84,6 +84,160 @@ function exportExcel(tasks: Task[], mondayIso: string | null, opts: ExportOption
   XLSX.writeFile(wb, `${opts.filePrefix}_${rangeSlug(mondayIso)}.xlsx`);
 }
 
+// ---- Reporte ejecutivo (PDF de alto nivel para administración) ----
+
+interface SummaryRow {
+  key: string;
+  completadas: number;
+  enCurso: number;
+  pendientes: number;
+  total: number;
+  pct: number;
+}
+
+function summaryRows(tasks: Task[], field: "cliente" | "colaborador"): SummaryRow[] {
+  const total = tasks.length;
+  const map = new Map<string, SummaryRow>();
+  for (const t of tasks) {
+    const key = t[field];
+    const row =
+      map.get(key) ?? { key, completadas: 0, enCurso: 0, pendientes: 0, total: 0, pct: 0 };
+    if (t.estado === "Completada") row.completadas += 1;
+    else if (t.estado === "En curso") row.enCurso += 1;
+    else row.pendientes += 1;
+    row.total += 1;
+    map.set(key, row);
+  }
+  return [...map.values()]
+    .map((r) => ({ ...r, pct: total === 0 ? 0 : Math.round((r.total / total) * 100) }))
+    .sort((a, b) => b.total - a.total || a.key.localeCompare(b.key));
+}
+
+function summaryBody(tasks: Task[], field: "cliente" | "colaborador"): string[][] {
+  return summaryRows(tasks, field).map((r) => [
+    r.key,
+    String(r.completadas),
+    String(r.enCurso),
+    String(r.pendientes),
+    String(r.total),
+    `${r.pct}%`,
+  ]);
+}
+
+const SUMMARY_HEADERS = ["", "Compl.", "En curso", "Pend.", "Total", "% del total"];
+
+/**
+ * PDF ejecutivo: indicadores, resúmenes por cliente/colaborador y puntos de
+ * atención. NO incluye el detalle de tareas individuales.
+ */
+export function exportExecutivePDF(
+  tasks: Task[],
+  puntos: AttentionPoint[],
+  mondayIso: string | null,
+): void {
+  const doc = new jsPDF({ orientation: "portrait" });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageW, 20, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text(title("RCKT — Reporte ejecutivo", mondayIso), 14, 13);
+
+  // Indicadores
+  const completadas = tasks.filter((t) => t.estado === "Completada").length;
+  const enCurso = tasks.filter((t) => t.estado === "En curso").length;
+  const pendientes = tasks.filter((t) => t.estado === "Pendiente").length;
+  const vencidas = tasks.filter((t) => isOverdue(t.fechaLimite, t.estado)).length;
+  const cumplimiento = tasks.length === 0 ? 0 : Math.round((completadas / tasks.length) * 100);
+  const kpis: Array<[string, string]> = [
+    ["Total tareas", String(tasks.length)],
+    ["Completadas", String(completadas)],
+    ["En curso", String(enCurso)],
+    ["Pendientes", String(pendientes)],
+    ["Cumplimiento", `${cumplimiento}%`],
+    ["Vencidas", String(vencidas)],
+  ];
+  const margin = 14;
+  const gap = 4;
+  const boxW = (pageW - margin * 2 - gap * 5) / 6;
+  const boxY = 26;
+  kpis.forEach(([label, value], i) => {
+    const x = margin + i * (boxW + gap);
+    doc.setFillColor(...IVORY);
+    doc.setDrawColor(229, 225, 216);
+    doc.roundedRect(x, boxY, boxW, 18, 2, 2, "FD");
+    doc.setTextColor(...NAVY);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(value, x + boxW / 2, boxY + 9, { align: "center" });
+    doc.setTextColor(58, 61, 68);
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "normal");
+    doc.text(label.toUpperCase(), x + boxW / 2, boxY + 14.5, { align: "center" });
+  });
+
+  let y = boxY + 26;
+
+  const section = (label: string) => {
+    doc.setTextColor(...NAVY);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(label, margin, y);
+    y += 2;
+  };
+
+  const tableStyles = {
+    fontSize: 8.5,
+    textColor: INK,
+  } as const;
+
+  section("Resumen por cliente");
+  autoTable(doc, {
+    startY: y,
+    head: [["Cliente", ...SUMMARY_HEADERS.slice(1)]],
+    body: summaryBody(tasks, "cliente"),
+    styles: tableStyles,
+    headStyles: { fillColor: NAVY, textColor: [255, 255, 255] },
+    alternateRowStyles: { fillColor: IVORY },
+    margin: { left: margin, right: margin },
+  });
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+
+  section("Resumen por colaborador");
+  autoTable(doc, {
+    startY: y,
+    head: [["Colaborador", ...SUMMARY_HEADERS.slice(1)]],
+    body: summaryBody(tasks, "colaborador"),
+    styles: tableStyles,
+    headStyles: { fillColor: NAVY, textColor: [255, 255, 255] },
+    alternateRowStyles: { fillColor: IVORY },
+    margin: { left: margin, right: margin },
+  });
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+
+  section("Puntos de atención");
+  if (puntos.length > 0) {
+    autoTable(doc, {
+      startY: y,
+      head: [["Cliente", "Colaborador", "Tipo", "Motivo"]],
+      body: puntos.map((p) => [p.cliente, p.colaborador, p.tipo, p.motivo || "—"]),
+      styles: tableStyles,
+      headStyles: { fillColor: NAVY, textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: IVORY },
+      margin: { left: margin, right: margin },
+    });
+  } else {
+    doc.setTextColor(58, 61, 68);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("Sin puntos de atención registrados en este período.", margin, y + 5);
+  }
+
+  doc.save(`reporte_ejecutivo_rckt_${rangeSlug(mondayIso)}.pdf`);
+}
+
 // ---- API pública ----
 
 const ADMIN_OPTS: ExportOptions = {
