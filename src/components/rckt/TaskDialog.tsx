@@ -237,11 +237,7 @@ export function TaskDialog({
     }));
   };
 
-  const submit = () => {
-    if (!v.colaborador || !v.area || !v.cliente || !v.tarea.trim() || !v.fechaLimite) {
-      setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
-      return;
-    }
+  const collectEnlaces = () => {
     // Si quedó un enlace escrito sin agregar, lo incluimos automáticamente
     const enlaces = [...v.enlaces];
     const pending = linkDraft.trim();
@@ -249,8 +245,62 @@ export function TaskDialog({
       const normalized = /^https?:\/\//i.test(pending) ? pending : `https://${pending}`;
       if (!enlaces.includes(normalized)) enlaces.push(normalized);
     }
-    onSubmit({ ...v, enlaces, tarea: v.tarea.trim() });
+    return enlaces;
+  };
+
+  const submit = () => {
+    if (!v.colaborador || !v.area || !v.cliente || !v.tarea.trim() || !v.fechaLimite) {
+      setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
+      return;
+    }
+    onSubmit({ ...v, enlaces: collectEnlaces(), tarea: v.tarea.trim() });
     onOpenChange(false);
+  };
+
+  /** Pre-llena el formulario con una plantilla; colaborador y fecha límite quedan vacíos. */
+  const applyTemplate = (id: string) => {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    setV((prev) => ({
+      ...prev,
+      colaborador: "",
+      area: tpl.area,
+      cliente: tpl.cliente,
+      tarea: tpl.tarea,
+      observaciones: tpl.observaciones,
+      enlaces: [...tpl.enlaces],
+      fechaLimite: "",
+      horaLimite: null,
+    }));
+    setError(null);
+    setTemplateMsg(`Plantilla "${tpl.nombre}" aplicada. Completa colaborador y fecha límite.`);
+  };
+
+  const saveTemplate = async () => {
+    if (!onSaveTemplate) return;
+    if (!v.tarea.trim()) {
+      setTemplateMsg("Escribe al menos el nombre de la tarea antes de guardar la plantilla.");
+      return;
+    }
+    const nombre = templateName.trim() || v.tarea.trim();
+    setSavingTemplate(true);
+    try {
+      await onSaveTemplate({
+        nombre,
+        cliente: v.cliente,
+        area: v.area,
+        tarea: v.tarea.trim(),
+        observaciones: v.observaciones,
+        enlaces: collectEnlaces(),
+      });
+      setTemplateMsg(`Plantilla "${nombre}" guardada.`);
+      setTemplateName("");
+      setShowTemplateForm(false);
+    } catch (err) {
+      setTemplateMsg(err instanceof Error ? err.message : "No se pudo guardar la plantilla.");
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   return (
