@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   AlertTriangle,
+  CalendarClock,
   CalendarPlus,
   FileDown,
   FileSpreadsheet,
@@ -99,6 +100,7 @@ function Dashboard() {
   const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
+  const [soloHoy, setSoloHoy] = useState(false);
 
   const changeEstado = async (t: Task, estado: Estado) => {
     try {
@@ -137,6 +139,22 @@ function Dashboard() {
     if (fEstado !== ALL) list = list.filter((t) => t.estado === fEstado);
     return list;
   }, [scopeTasks, isCoord, fColab, fCliente, fArea, fEstado]);
+
+  // Filtro rápido "Hoy": solo tareas cuya fecha límite es hoy,
+  // sin importar la semana. Respeta los filtros de la administradora.
+  const hoyTasks = useMemo(() => {
+    const today = todayISO();
+    let list = store.data.tasks.filter((t) => t.fechaLimite === today);
+    if (isCoord) {
+      if (fColab !== ALL) list = list.filter((t) => t.colaborador === fColab);
+      if (fCliente !== ALL) list = list.filter((t) => t.cliente === fCliente);
+      if (fArea !== ALL) list = list.filter((t) => t.area === fArea);
+      if (fEstado !== ALL) list = list.filter((t) => t.estado === fEstado);
+    }
+    return list;
+  }, [store.data.tasks, isCoord, fColab, fCliente, fArea, fEstado]);
+
+  const visibleTasks = soloHoy ? hoyTasks : weekTasks;
 
   const puntos = useMemo(
     () => (historico ? store.data.puntos : store.data.puntos.filter((p) => p.semana === semana)),
@@ -347,9 +365,20 @@ function Dashboard() {
             value={semana}
             onChange={(v) => {
               setHistorico(false);
+              setSoloHoy(false);
               setSemana(v);
             }}
           />
+          <Button
+            variant={soloHoy ? "default" : "outline"}
+            size="sm"
+            className="gap-1.5"
+            aria-pressed={soloHoy}
+            onClick={() => setSoloHoy((h) => !h)}
+          >
+            <CalendarClock className="size-3.5" />
+            {soloHoy ? "Ver toda la semana" : "Hoy"}
+          </Button>
           {isCoord ? (
             <Button
               variant={historico ? "default" : "outline"}
@@ -569,7 +598,7 @@ function Dashboard() {
           </section>
         ) : null}
 
-        {backlogTasks.length > 0 ? (
+        {!soloHoy && backlogTasks.length > 0 ? (
           <section
             id="tareas-atrasadas"
             className="rounded-xl border border-warn/40 bg-warn-soft p-4 shadow-panel"
@@ -612,13 +641,23 @@ function Dashboard() {
 
         <section id="lista-tareas">
           <h2 className="mb-3 text-base font-semibold">
-            {isCoord
-              ? historico
-                ? "Todas las tareas (histórico)"
-                : "Todas las tareas"
-              : "Mis tareas"}
+            {soloHoy
+              ? `Tareas que vencen hoy (${visibleTasks.length})`
+              : isCoord
+                ? historico
+                  ? "Todas las tareas (histórico)"
+                  : "Todas las tareas"
+                : "Mis tareas"}
           </h2>
-          {!historico && scopeTasks.length === 0 && otherWeeks.length > 0 ? (
+          {soloHoy && visibleTasks.length === 0 ? (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+              <span>No hay tareas con fecha límite hoy.</span>
+              <Button variant="ghost" size="sm" onClick={() => setSoloHoy(false)}>
+                Ver toda la semana
+              </Button>
+            </div>
+          ) : null}
+          {!soloHoy && !historico && scopeTasks.length === 0 && otherWeeks.length > 0 ? (
             <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
               <span>
                 No hay tareas en esta semana, pero existen {store.data.tasks.length} en otras semanas:
@@ -635,16 +674,16 @@ function Dashboard() {
           ) : null}
           {vista === "tablero" ? (
             <KanbanBoard
-              tasks={weekTasks}
+              tasks={visibleTasks}
               showColaborador={isCoord}
               onOpen={(t) => setViewing(t)}
               onChangeEstado={changeEstado}
             />
           ) : (
             <TaskTable
-              tasks={weekTasks}
+              tasks={visibleTasks}
               showColaborador={isCoord}
-              showSemana={historico}
+              showSemana={historico || soloHoy}
               onEdit={
                 isCoord
                   ? (t) => {
@@ -666,7 +705,7 @@ function Dashboard() {
           )}
         </section>
 
-        {!isCoord && upcomingTasks.length > 0 ? (
+        {!soloHoy && !isCoord && upcomingTasks.length > 0 ? (
           <section>
             <h2 className="mb-1 text-base font-semibold">
               Próximas semanas ({upcomingTasks.length})
