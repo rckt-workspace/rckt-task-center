@@ -760,6 +760,15 @@ function Dashboard() {
         defaultColaborador={isCoord ? undefined : nombre}
         currentUserName={nombre}
         onSubmit={handleSubmit}
+        templates={isCoord ? templatesApi.templates : undefined}
+        onSaveTemplate={
+          isCoord
+            ? async (input) => {
+                await templatesApi.save(input);
+                toast.success(`Plantilla "${input.nombre}" guardada`);
+              }
+            : undefined
+        }
       />
 
       {store.session ? (
