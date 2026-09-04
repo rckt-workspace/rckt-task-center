@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
+import { BookmarkPlus, LayoutTemplate, Link2, Mic, Plus, Square, Upload, X } from "lucide-react";
+import type { TaskTemplate, TaskTemplateInput } from "@/lib/rckt/useTaskTemplates";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,6 +48,10 @@ interface Props {
   /** Nombre del usuario actual, usado como autor en comentarios */
   currentUserName?: string | undefined;
   onSubmit: (values: TaskInput) => void;
+  /** Plantillas disponibles (solo admin) */
+  templates?: TaskTemplate[] | undefined;
+  /** Guardar la tarea actual como plantilla (solo admin) */
+  onSaveTemplate?: ((input: TaskTemplateInput) => Promise<void>) | undefined;
 }
 
 /** Previsualización con <audio> de un archivo de audio recién seleccionado/grabado (aún no subido). */
@@ -85,11 +90,17 @@ export function TaskDialog({
   cargos,
   currentUserName,
   onSubmit,
+  templates = [],
+  onSaveTemplate,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
   const [error, setError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [templateName, setTemplateName] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateMsg, setTemplateMsg] = useState<string | null>(null);
+  const [showTemplateForm, setShowTemplateForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -162,6 +173,9 @@ export function TaskDialog({
     setError(null);
     setLinkDraft("");
     setLinkError(null);
+    setTemplateName("");
+    setTemplateMsg(null);
+    setShowTemplateForm(false);
     const areaFromCargo = (nombre: string, fallback: Area): Area => {
       const cargo = cargos?.[nombre];
       return cargo && (AREAS as readonly string[]).includes(cargo) ? cargo : fallback;
@@ -223,11 +237,7 @@ export function TaskDialog({
     }));
   };
 
-  const submit = () => {
-    if (!v.colaborador || !v.area || !v.cliente || !v.tarea.trim() || !v.fechaLimite) {
-      setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
-      return;
-    }
+  const collectEnlaces = () => {
     // Si quedó un enlace escrito sin agregar, lo incluimos automáticamente
     const enlaces = [...v.enlaces];
     const pending = linkDraft.trim();
@@ -235,8 +245,62 @@ export function TaskDialog({
       const normalized = /^https?:\/\//i.test(pending) ? pending : `https://${pending}`;
       if (!enlaces.includes(normalized)) enlaces.push(normalized);
     }
-    onSubmit({ ...v, enlaces, tarea: v.tarea.trim() });
+    return enlaces;
+  };
+
+  const submit = () => {
+    if (!v.colaborador || !v.area || !v.cliente || !v.tarea.trim() || !v.fechaLimite) {
+      setError("Colaborador, Área, Cliente, Tarea y Fecha límite son obligatorios.");
+      return;
+    }
+    onSubmit({ ...v, enlaces: collectEnlaces(), tarea: v.tarea.trim() });
     onOpenChange(false);
+  };
+
+  /** Pre-llena el formulario con una plantilla; colaborador y fecha límite quedan vacíos. */
+  const applyTemplate = (id: string) => {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    setV((prev) => ({
+      ...prev,
+      colaborador: "",
+      area: tpl.area,
+      cliente: tpl.cliente,
+      tarea: tpl.tarea,
+      observaciones: tpl.observaciones,
+      enlaces: [...tpl.enlaces],
+      fechaLimite: "",
+      horaLimite: null,
+    }));
+    setError(null);
+    setTemplateMsg(`Plantilla "${tpl.nombre}" aplicada. Completa colaborador y fecha límite.`);
+  };
+
+  const saveTemplate = async () => {
+    if (!onSaveTemplate) return;
+    if (!v.tarea.trim()) {
+      setTemplateMsg("Escribe al menos el nombre de la tarea antes de guardar la plantilla.");
+      return;
+    }
+    const nombre = templateName.trim() || v.tarea.trim();
+    setSavingTemplate(true);
+    try {
+      await onSaveTemplate({
+        nombre,
+        cliente: v.cliente,
+        area: v.area,
+        tarea: v.tarea.trim(),
+        observaciones: v.observaciones,
+        enlaces: collectEnlaces(),
+      });
+      setTemplateMsg(`Plantilla "${nombre}" guardada.`);
+      setTemplateName("");
+      setShowTemplateForm(false);
+    } catch (err) {
+      setTemplateMsg(err instanceof Error ? err.message : "No se pudo guardar la plantilla.");
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   return (
@@ -250,6 +314,69 @@ export function TaskDialog({
               : "Puedes actualizar estado, fecha de entrega y observaciones."}
           </DialogDescription>
         </DialogHeader>
+
+        {canEditAll && mode === "create" && onSaveTemplate ? (
+          <div className="space-y-2 rounded-lg border border-border bg-secondary/40 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value="" onValueChange={applyTemplate} disabled={templates.length === 0}>
+                <SelectTrigger className="h-9 w-full sm:w-72" aria-label="Nueva tarea desde plantilla">
+                  <LayoutTemplate className="size-4 shrink-0 text-muted-foreground" />
+                  <SelectValue
+                    placeholder={
+                      templates.length === 0
+                        ? "No hay plantillas guardadas"
+                        : "Nueva tarea desde plantilla…"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.nombre}
+                      <span className="ml-1 text-xs text-muted-foreground">· {t.cliente}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  setShowTemplateForm((s) => !s);
+                  setTemplateMsg(null);
+                  if (!templateName) setTemplateName(v.tarea.trim());
+                }}
+              >
+                <BookmarkPlus className="size-4" />
+                Guardar como plantilla
+              </Button>
+            </div>
+            {showTemplateForm ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  className="h-9 flex-1 min-w-48"
+                  placeholder="Nombre de la plantilla (ej. Reporte semanal Cliente X)"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  maxLength={120}
+                />
+                <Button type="button" size="sm" onClick={() => void saveTemplate()} disabled={savingTemplate}>
+                  {savingTemplate ? "Guardando…" : "Guardar"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowTemplateForm(false)}>
+                  Cancelar
+                </Button>
+                <p className="w-full text-xs text-muted-foreground">
+                  Se guardan nombre, cliente, área, descripción y enlaces. La fecha límite y el
+                  colaborador se definen cada vez.
+                </p>
+              </div>
+            ) : null}
+            {templateMsg ? <p className="text-xs text-muted-foreground">{templateMsg}</p> : null}
+          </div>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">

@@ -38,6 +38,7 @@ import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
 import { KanbanBoard } from "@/components/rckt/KanbanBoard";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
+import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
@@ -115,6 +116,7 @@ function Dashboard() {
   };
 
   const isCoord = store.isAdmin;
+  const templatesApi = useTaskTemplates(isCoord);
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
   const isPastWeek = !historico && semana < currentWeekISO();
   const colaboradores = useMemo(() => store.profiles.map((p) => p.nombre), [store.profiles]);
@@ -758,6 +760,15 @@ function Dashboard() {
         defaultColaborador={isCoord ? undefined : nombre}
         currentUserName={nombre}
         onSubmit={handleSubmit}
+        templates={isCoord ? templatesApi.templates : undefined}
+        onSaveTemplate={
+          isCoord
+            ? async (input) => {
+                await templatesApi.save(input);
+                toast.success(`Plantilla "${input.nombre}" guardada`);
+              }
+            : undefined
+        }
       />
 
       {store.session ? (

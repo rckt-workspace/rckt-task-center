@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Pencil, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, LayoutTemplate, Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAppStore } from "@/lib/rckt/useAppStore";
+import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { AREAS } from "@/lib/rckt/types";
 import { createTeamUser, deleteTeamUser, updateUserCargo } from "@/lib/admin.functions";
 
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminPage() {
   const store = useAppStore();
+  const templatesApi = useTaskTemplates(store.isAdmin);
   const navigate = useNavigate();
   const createUser = useServerFn(createTeamUser);
   const deleteUser = useServerFn(deleteTeamUser);
@@ -272,6 +274,78 @@ function AdminPage() {
               ))}
             </TableBody>
           </Table>
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
+              <LayoutTemplate className="size-5 text-primary" />
+              Plantillas de tareas
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Tareas guardadas como plantilla desde el formulario de nueva tarea. Se reutilizan con
+              "Nueva tarea desde plantilla".
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-panel">
+            {templatesApi.templates.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-muted-foreground">
+                {templatesApi.loading
+                  ? "Cargando plantillas…"
+                  : "Aún no hay plantillas. Créalas desde “Nueva tarea” → “Guardar como plantilla”."}
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-secondary/70 hover:bg-secondary/70">
+                    <TableHead>Plantilla</TableHead>
+                    <TableHead>Tarea</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Área</TableHead>
+                    <TableHead className="text-right">Enlaces</TableHead>
+                    <TableHead className="w-[64px] text-right">Acción</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templatesApi.templates.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-medium">{t.nombre}</TableCell>
+                      <TableCell className="max-w-xs text-muted-foreground">
+                        <span className="line-clamp-2" title={t.observaciones || t.tarea}>
+                          {t.tarea}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{t.cliente}</TableCell>
+                      <TableCell className="text-muted-foreground">{t.area}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {t.enlaces.length}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Eliminar plantilla"
+                          onClick={async () => {
+                            if (!window.confirm(`¿Eliminar la plantilla "${t.nombre}"?`)) return;
+                            try {
+                              await templatesApi.remove(t.id);
+                              toast.success("Plantilla eliminada");
+                            } catch (err) {
+                              toast.error(
+                                err instanceof Error ? err.message : "No se pudo eliminar la plantilla",
+                              );
+                            }
+                          }}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </section>
       </main>
 
