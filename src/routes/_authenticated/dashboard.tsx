@@ -38,6 +38,7 @@ import { StatsBar } from "@/components/rckt/StatsBar";
 import { TaskTable } from "@/components/rckt/TaskTable";
 import { KanbanBoard } from "@/components/rckt/KanbanBoard";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
+import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
