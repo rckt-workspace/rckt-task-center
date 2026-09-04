@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   AlertTriangle,
+  CalendarClock,
   CalendarPlus,
   FileDown,
   FileSpreadsheet,
@@ -99,6 +100,7 @@ function Dashboard() {
   const [confirmPuntoOpen, setConfirmPuntoOpen] = useState(false);
   const [historico, setHistorico] = useState(false);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
+  const [soloHoy, setSoloHoy] = useState(false);
 
   const changeEstado = async (t: Task, estado: Estado) => {
     try {
@@ -137,6 +139,22 @@ function Dashboard() {
     if (fEstado !== ALL) list = list.filter((t) => t.estado === fEstado);
     return list;
   }, [scopeTasks, isCoord, fColab, fCliente, fArea, fEstado]);
+
+  // Filtro rápido "Hoy": solo tareas cuya fecha límite es hoy,
+  // sin importar la semana. Respeta los filtros de la administradora.
+  const hoyTasks = useMemo(() => {
+    const today = todayISO();
+    let list = store.data.tasks.filter((t) => t.fechaLimite === today);
+    if (isCoord) {
+      if (fColab !== ALL) list = list.filter((t) => t.colaborador === fColab);
+      if (fCliente !== ALL) list = list.filter((t) => t.cliente === fCliente);
+      if (fArea !== ALL) list = list.filter((t) => t.area === fArea);
+      if (fEstado !== ALL) list = list.filter((t) => t.estado === fEstado);
+    }
+    return list;
+  }, [store.data.tasks, isCoord, fColab, fCliente, fArea, fEstado]);
+
+  const visibleTasks = soloHoy ? hoyTasks : weekTasks;
 
   const puntos = useMemo(
     () => (historico ? store.data.puntos : store.data.puntos.filter((p) => p.semana === semana)),
