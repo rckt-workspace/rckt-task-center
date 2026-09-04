@@ -641,13 +641,23 @@ function Dashboard() {
 
         <section id="lista-tareas">
           <h2 className="mb-3 text-base font-semibold">
-            {isCoord
-              ? historico
-                ? "Todas las tareas (histórico)"
-                : "Todas las tareas"
-              : "Mis tareas"}
+            {soloHoy
+              ? `Tareas que vencen hoy (${visibleTasks.length})`
+              : isCoord
+                ? historico
+                  ? "Todas las tareas (histórico)"
+                  : "Todas las tareas"
+                : "Mis tareas"}
           </h2>
-          {!historico && scopeTasks.length === 0 && otherWeeks.length > 0 ? (
+          {soloHoy && visibleTasks.length === 0 ? (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+              <span>No hay tareas con fecha límite hoy.</span>
+              <Button variant="ghost" size="sm" onClick={() => setSoloHoy(false)}>
+                Ver toda la semana
+              </Button>
+            </div>
+          ) : null}
+          {!soloHoy && !historico && scopeTasks.length === 0 && otherWeeks.length > 0 ? (
             <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
               <span>
                 No hay tareas en esta semana, pero existen {store.data.tasks.length} en otras semanas:
