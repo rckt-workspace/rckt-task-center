@@ -315,6 +315,69 @@ export function TaskDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {canEditAll && mode === "create" && onSaveTemplate ? (
+          <div className="space-y-2 rounded-lg border border-border bg-secondary/40 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value="" onValueChange={applyTemplate} disabled={templates.length === 0}>
+                <SelectTrigger className="h-9 w-full sm:w-72" aria-label="Nueva tarea desde plantilla">
+                  <LayoutTemplate className="size-4 shrink-0 text-muted-foreground" />
+                  <SelectValue
+                    placeholder={
+                      templates.length === 0
+                        ? "No hay plantillas guardadas"
+                        : "Nueva tarea desde plantilla…"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.nombre}
+                      <span className="ml-1 text-xs text-muted-foreground">· {t.cliente}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  setShowTemplateForm((s) => !s);
+                  setTemplateMsg(null);
+                  if (!templateName) setTemplateName(v.tarea.trim());
+                }}
+              >
+                <BookmarkPlus className="size-4" />
+                Guardar como plantilla
+              </Button>
+            </div>
+            {showTemplateForm ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  className="h-9 flex-1 min-w-48"
+                  placeholder="Nombre de la plantilla (ej. Reporte semanal Cliente X)"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  maxLength={120}
+                />
+                <Button type="button" size="sm" onClick={() => void saveTemplate()} disabled={savingTemplate}>
+                  {savingTemplate ? "Guardando…" : "Guardar"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setShowTemplateForm(false)}>
+                  Cancelar
+                </Button>
+                <p className="w-full text-xs text-muted-foreground">
+                  Se guardan nombre, cliente, área, descripción y enlaces. La fecha límite y el
+                  colaborador se definen cada vez.
+                </p>
+              </div>
+            ) : null}
+            {templateMsg ? <p className="text-xs text-muted-foreground">{templateMsg}</p> : null}
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Colaborador</Label>
