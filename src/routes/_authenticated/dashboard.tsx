@@ -526,10 +526,14 @@ function Dashboard() {
               tasks={backlogTasks}
               showColaborador={false}
               showSemana
-              onEdit={(t) => {
-                setEditing(t);
-                setDialogOpen(true);
-              }}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
               onOpen={(t) => setViewing(t)}
             />
           </section>
@@ -562,10 +566,14 @@ function Dashboard() {
             tasks={weekTasks}
             showColaborador={isCoord}
             showSemana={historico}
-            onEdit={(t) => {
-              setEditing(t);
-              setDialogOpen(true);
-            }}
+            onEdit={
+              isCoord
+                ? (t) => {
+                    setEditing(t);
+                    setDialogOpen(true);
+                  }
+                : undefined
+            }
             onOpen={(t) => setViewing(t)}
             onDelete={
               isCoord
@@ -590,10 +598,14 @@ function Dashboard() {
               tasks={upcomingTasks}
               showColaborador={false}
               showSemana
-              onEdit={(t) => {
-                setEditing(t);
-                setDialogOpen(true);
-              }}
+              onEdit={
+                isCoord
+                  ? (t) => {
+                      setEditing(t);
+                      setDialogOpen(true);
+                    }
+                  : undefined
+              }
               onOpen={(t) => setViewing(t)}
             />
           </section>
