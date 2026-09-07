@@ -275,14 +275,14 @@ type Sheet = any;
 function styleHeaderRow(row: Row): void {
   row.font = { bold: true, color: { argb: "FFFFFFFF" } };
   row.alignment = { vertical: "middle", horizontal: "left" };
-  row.eachCell((cell) => {
+  row.eachCell((cell: any) => {
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY_HEX } };
     cell.border = { bottom: { style: "thin", color: { argb: BORDER_HEX } } };
   });
 }
 
 function fill(row: Row, argb: string): void {
-  row.eachCell((cell) => {
+  row.eachCell((cell: any) => {
     if (!cell.fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb } };
   });
 }
