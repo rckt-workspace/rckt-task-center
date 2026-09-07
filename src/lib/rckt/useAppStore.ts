@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { mondayOf, fromISO, toISO, todayISO } from "./dates";
-import type { AppData, AttentionPoint, Perfil, Task } from "./types";
+import type { AppData, AttentionPoint, Perfil, Rol, Task } from "./types";
 import type { Database } from "@/integrations/supabase/types";
 import { notifyTaskAssigned } from "@/lib/notify.functions";
 
