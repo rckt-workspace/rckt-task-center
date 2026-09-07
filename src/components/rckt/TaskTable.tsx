@@ -74,10 +74,16 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                     </TableCell>
                   ) : null}
                   {showColaborador ? (
-                    <TableCell className="whitespace-nowrap">{t.colaborador}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <PersonChip name={t.colaborador} />
+                    </TableCell>
                   ) : null}
-                  <TableCell>{t.cliente}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.area}</TableCell>
+                  <TableCell>
+                    <ClienteTag cliente={t.cliente} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <AreaTag area={t.area} />
+                  </TableCell>
                   <TableCell className="font-medium">{t.tarea}</TableCell>
                   <TableCell
                     className={cn("whitespace-nowrap", overdue && "font-medium text-overdue")}
