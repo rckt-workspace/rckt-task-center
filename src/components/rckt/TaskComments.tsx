@@ -183,6 +183,47 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
                   </span>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap break-words text-foreground/90">{c.body}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  {EMOJIS.map((emoji) => {
+                    const who = reactions.filter(
+                      (r) => r.comment_id === c.id && r.emoji === emoji,
+                    );
+                    const active = who.some((r) => r.user_id === userId);
+                    if (who.length === 0 && !userId) return null;
+                    return (
+                      <button
+                        key={emoji}
+                        type="button"
+                        title={
+                          who.length > 0
+                            ? who.map((r) => r.user_name || "—").join(", ")
+                            : `Reaccionar con ${emoji}`
+                        }
+                        aria-pressed={active}
+                        aria-label={`Reaccionar con ${emoji}`}
+                        onClick={() => void toggleReaction(c.id, emoji)}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
+                          active
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground hover:bg-secondary",
+                          who.length === 0 && "opacity-60 group-hover:opacity-100",
+                        )}
+                      >
+                        <span aria-hidden>{emoji}</span>
+                        {who.length > 0 ? <span>{who.length}</span> : null}
+                      </button>
+                    );
+                  })}
+                  {reactions.some((r) => r.comment_id === c.id) ? (
+                    <span className="ml-1 truncate text-[11px] text-muted-foreground">
+                      {reactions
+                        .filter((r) => r.comment_id === c.id)
+                        .map((r) => `${r.emoji} ${r.user_name || "—"}`)
+                        .join(" · ")}
+                    </span>
+                  ) : null}
+                </div>
               </li>
             );
           })
