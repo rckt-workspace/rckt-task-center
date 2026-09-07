@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { AlertTriangle, CalendarClock, GripVertical, User } from "lucide-react";
+import { AlertTriangle, CalendarClock, ClipboardList, GripVertical } from "lucide-react";
 import { EstadoBadge } from "./EstadoBadge";
+import { EmptyState } from "./EmptyState";
+import { PersonChip } from "./PersonAvatar";
+import { ClienteTag } from "./EntityTags";
 import { formatFechaHora, isOverdue } from "@/lib/rckt/dates";
 
 import type { Estado, Task } from "@/lib/rckt/types";
