@@ -54,9 +54,13 @@ export function SummaryTable({ title, tasks, field, selected, onSelect }: Props)
       </header>
 
       {rows.length === 0 ? (
-        <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-          Sin datos para esta semana.
-        </p>
+        <EmptyState
+          icon={BarChart3}
+          title="Sin datos para esta semana"
+          description="Cuando se registren tareas verás aquí el resumen de avance."
+          className="m-4 border-0 bg-transparent"
+          compact
+        />
       ) : (
         <>
           {/* Desktop */}

@@ -1,4 +1,7 @@
-import { AlertTriangle, Eye, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, ClipboardList, Eye, Pencil, Trash2 } from "lucide-react";
+import { EmptyState } from "./EmptyState";
+import { PersonChip } from "./PersonAvatar";
+import { AreaTag, ClienteTag } from "./EntityTags";
 import { Button } from "@/components/ui/button";
 import {
   Table,

@@ -77,7 +77,12 @@ export function StatsBar({ tasks }: { tasks: Task[] }) {
       <Stat label="Completadas" value={s.completadas} tone="success" />
       <Stat label="En curso" value={s.enCurso} tone="info" />
       <Stat label="Pendientes" value={s.pendientes} tone="warn" />
-      <Stat label="Cumplimiento" value={`${s.cumplimiento}%`} tone="accent" />
+      <Stat
+        label="Cumplimiento"
+        value={`${s.cumplimiento}%`}
+        tone="accent"
+        progress={s.cumplimiento}
+      />
       <Stat label="Vencidas" value={s.vencidas} tone="overdue" />
     </div>
   );
