@@ -194,13 +194,16 @@ export function useAppStore() {
     setIsAdmin((myRolesRes.data ?? []).some((r) => r.role === "admin"));
     const roleMap = new Map((allRolesRes.data ?? []).map((r) => [r.user_id, r.role as Rol]));
     setProfiles(
-      (profilesRes.data ?? []).map((p) => ({
-        id: p.id,
-        nombre: p.full_name || p.email,
-        email: p.email,
-        cargo: p.cargo,
-        role: roleMap.get(p.id),
-      })),
+      (profilesRes.data ?? []).map((p) => {
+        const role = roleMap.get(p.id);
+        return {
+          id: p.id,
+          nombre: p.full_name || p.email,
+          email: p.email,
+          cargo: p.cargo,
+          ...(role ? { role } : {}),
+        };
+      }),
     );
     setTaskRows((tasksRes.data ?? []) as TaskRow[]);
     setPointRows((pointsRes.data ?? []) as PointRow[]);
