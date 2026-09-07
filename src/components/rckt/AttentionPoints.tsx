@@ -94,9 +94,13 @@ export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete }: P
                             </Button>
                           </div>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {p.cliente} · {p.colaborador}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                          <ClienteTag cliente={p.cliente} />
+                          <span className="inline-flex items-center gap-1.5">
+                            <PersonAvatar name={p.colaborador} size="xs" />
+                            {p.colaborador}
+                          </span>
+                        </div>
                         <p className="mt-2 text-sm">{p.motivo}</p>
                       </article>
                     );
