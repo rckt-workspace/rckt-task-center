@@ -103,7 +103,36 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
   const remove = async (id: string) => {
     const { error: err } = await supabase.from("task_comments").delete().eq("id", id);
     if (err) setError(err.message);
-    else setComments((prev) => prev.filter((c) => c.id !== id));
+    else {
+      setComments((prev) => prev.filter((c) => c.id !== id));
+      setReactions((prev) => prev.filter((r) => r.comment_id !== id));
+    }
+  };
+
+  const toggleReaction = async (commentId: string, emoji: string) => {
+    if (!userId) return;
+    const existing = reactions.find(
+      (r) => r.comment_id === commentId && r.user_id === userId && r.emoji === emoji,
+    );
+    if (existing) {
+      setReactions((prev) => prev.filter((r) => r.id !== existing.id));
+      const { error: err } = await supabase
+        .from("comment_reactions")
+        .delete()
+        .eq("id", existing.id);
+      if (err) {
+        setError(err.message);
+        void load();
+      }
+      return;
+    }
+    const { data, error: err } = await supabase
+      .from("comment_reactions")
+      .insert({ comment_id: commentId, user_id: userId, user_name: authorName, emoji })
+      .select("*")
+      .single();
+    if (err) setError(err.message);
+    else if (data) setReactions((prev) => [...prev, data as ReactionRow]);
   };
 
   return (
