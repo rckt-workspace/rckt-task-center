@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { Perfil, Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 import { User } from "lucide-react";
+import { PersonChip } from "./PersonAvatar";
 
 interface Props {
   profiles: Perfil[];
@@ -72,7 +73,10 @@ export function WorkloadWidget({
                     isSelected && "bg-accent/50",
                   )}
                 >
-                  <span className="font-medium text-foreground">{nombre}</span>
+                  <PersonChip
+                    name={nombre}
+                    nameClassName="font-medium text-foreground"
+                  />
                   <span
                     className={cn(
                       "rounded-full px-2.5 py-0.5 text-xs font-semibold",

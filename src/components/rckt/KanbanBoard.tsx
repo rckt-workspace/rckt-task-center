@@ -52,9 +52,11 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
-        <p className="text-sm text-muted-foreground">No hay tareas que coincidan con esta semana y filtros.</p>
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title="Tablero en blanco"
+        description="No hay tareas que coincidan con esta semana y filtros."
+      />
     );
   }
 
@@ -128,7 +130,10 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
                         <GripVertical className="mt-0.5 size-4 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium leading-snug">{t.tarea}</p>
-                          <p className="mt-1 truncate text-xs text-muted-foreground">{t.cliente}</p>
+                          <ClienteTag
+                            cliente={t.cliente}
+                            className="mt-1 text-xs text-muted-foreground"
+                          />
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                             <span
                               className={cn(
