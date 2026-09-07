@@ -29,9 +29,11 @@ interface Props {
 export function TaskTable({ tasks, showColaborador = false, showSemana = false, onEdit, onOpen, onDelete }: Props) {
   if (tasks.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
-        <p className="text-sm text-muted-foreground">No hay tareas que coincidan con esta semana y filtros.</p>
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title="Agenda despejada"
+        description="No hay tareas que coincidan con esta semana y filtros. Cambia la semana o crea una nueva tarea."
+      />
     );
   }
 
