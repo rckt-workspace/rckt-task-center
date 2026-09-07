@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 import { formatFechaHora, isOverdue, sundayOfISO, toISO, weekLabel } from "@/lib/rckt/dates";
 import type { AttentionPoint, Task } from "@/lib/rckt/types";
 
@@ -252,6 +254,94 @@ export function exportTasksPDF(tasks: Task[], mondayIso: string | null): void {
 
 export function exportTasksExcel(tasks: Task[], mondayIso: string | null): void {
   exportExcel(tasks, mondayIso, ADMIN_OPTS);
+}
+
+/** Excel completo de administración: hoja "Tareas" + hoja "Resumen". */
+export async function exportAdminWorkbook(
+  tasks: Task[],
+  puntos: AttentionPoint[],
+  mondayIso: string | null,
+): Promise<void> {
+  const ids = tasks.map((t) => t.id);
+  const commentsByTask = new Map<string, string[]>();
+  if (ids.length > 0) {
+    const { data } = await supabase
+      .from("task_comments")
+      .select("task_id, author_name, body, created_at")
+      .in("task_id", ids)
+      .order("created_at", { ascending: true });
+    for (const c of data ?? []) {
+      const label = `${c.author_name || "—"} (${format(new Date(c.created_at), "dd/MM")}): ${c.body}`;
+      const list = commentsByTask.get(c.task_id) ?? [];
+      list.push(label);
+      commentsByTask.set(c.task_id, list);
+    }
+  }
+
+  const detalle = tasks.map((t) => ({
+    Tarea: t.tarea,
+    Colaborador: t.colaborador,
+    Cliente: t.cliente,
+    "Área": t.area,
+    "Fecha límite": formatFechaHora(t.fechaLimite, t.horaLimite),
+    Estado: t.estado,
+    "Entregable/Observaciones": t.observaciones || "",
+    Adjuntos: t.adjuntos.length === 0 ? "" : t.adjuntos.map((a) => a.name).join(", "),
+    "N° adjuntos": t.adjuntos.length,
+    Enlaces: t.enlaces.join(", "),
+    "Nota de voz": t.adjuntos.some((a) => a.mime.startsWith("audio/")) ? "Sí" : "No",
+    Comentarios: (commentsByTask.get(t.id) ?? []).join(" | "),
+    "Fecha de creación": t.createdAt ? format(new Date(t.createdAt), "dd/MM/yyyy HH:mm") : "",
+  }));
+
+  const wsTareas = XLSX.utils.json_to_sheet(detalle);
+  wsTareas["!cols"] = [
+    { wch: 40 }, { wch: 22 }, { wch: 26 }, { wch: 24 }, { wch: 20 }, { wch: 12 },
+    { wch: 50 }, { wch: 30 }, { wch: 12 }, { wch: 40 }, { wch: 12 }, { wch: 60 }, { wch: 18 },
+  ];
+
+  // Hoja resumen
+  const completadas = tasks.filter((t) => t.estado === "Completada").length;
+  const enCurso = tasks.filter((t) => t.estado === "En curso").length;
+  const pendientes = tasks.filter((t) => t.estado === "Pendiente").length;
+  const vencidas = tasks.filter((t) => isOverdue(t.fechaLimite, t.estado)).length;
+  const cumplimiento = tasks.length === 0 ? 0 : Math.round((completadas / tasks.length) * 100);
+
+  const aoa: (string | number)[][] = [
+    [title("RCKT — Reporte ejecutivo", mondayIso)],
+    [],
+    ["Indicadores"],
+    ["Total tareas", tasks.length],
+    ["Completadas", completadas],
+    ["En curso", enCurso],
+    ["Pendientes", pendientes],
+    ["Cumplimiento", `${cumplimiento}%`],
+    ["Vencidas", vencidas],
+    [],
+    ["Resumen por cliente"],
+    ["Cliente", ...SUMMARY_HEADERS.slice(1)],
+    ...summaryBody(tasks, "cliente"),
+    [],
+    ["Resumen por colaborador"],
+    ["Colaborador", ...SUMMARY_HEADERS.slice(1)],
+    ...summaryBody(tasks, "colaborador"),
+    [],
+    ["Puntos de atención"],
+  ];
+  if (puntos.length > 0) {
+    aoa.push(["Cliente", "Colaborador", "Tipo", "Motivo"]);
+    for (const p of puntos) aoa.push([p.cliente, p.colaborador, p.tipo, p.motivo || "—"]);
+  } else {
+    aoa.push(["Sin puntos de atención registrados en este período."]);
+  }
+
+  const wsResumen = XLSX.utils.aoa_to_sheet(aoa);
+  wsResumen["!cols"] = [{ wch: 32 }, { wch: 22 }, { wch: 14 }, { wch: 40 }, { wch: 12 }, { wch: 14 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsTareas, "Tareas");
+  XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
+  XLSX.writeFile(wb, `tareas_rckt_${rangeSlug(mondayIso)}.xlsx`);
 }
 
 /** Slug de nombre de archivo a partir del nombre del colaborador. */
