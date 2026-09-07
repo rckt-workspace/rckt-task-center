@@ -55,7 +55,7 @@ import {
   exportExecutivePDF,
   exportMyTasksExcel,
   exportMyTasksPDF,
-  exportTasksExcel,
+  exportAdminWorkbook,
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, mondayOf, toISO, todayISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
@@ -456,8 +456,9 @@ function Dashboard() {
                 size="sm"
                 className="gap-2"
                 onClick={() => {
-                  exportTasksExcel(scopeTasks, historico ? null : semana);
-                  toast.success("Excel exportado");
+                  void exportAdminWorkbook(scopeTasks, puntos, historico ? null : semana)
+                    .then(() => toast.success("Excel exportado"))
+                    .catch(() => toast.error("No se pudo exportar el Excel"));
                 }}
               >
                 <FileSpreadsheet className="size-3.5" />
