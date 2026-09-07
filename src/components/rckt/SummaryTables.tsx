@@ -1,4 +1,6 @@
+import { BarChart3 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "./EmptyState";
 import type { Task } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
 
