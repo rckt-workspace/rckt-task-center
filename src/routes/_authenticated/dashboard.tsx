@@ -122,13 +122,17 @@ function Dashboard() {
   const templatesApi = useTaskTemplates(isCoord);
   const nombre = store.perfil?.nombre ?? store.session?.user.email ?? "";
   const isPastWeek = !historico && semana < currentWeekISO();
-  const colaboradores = useMemo(() => store.profiles.map((p) => p.nombre), [store.profiles]);
+  const colaboradorProfiles = useMemo(
+    () => store.profiles.filter((p) => p.role === "colaborador"),
+    [store.profiles],
+  );
+  const colaboradores = useMemo(() => colaboradorProfiles.map((p) => p.nombre), [colaboradorProfiles]);
   const cargos = useMemo(
     () =>
       Object.fromEntries(
-        store.profiles.filter((p) => p.cargo).map((p) => [p.nombre, p.cargo]),
+        colaboradorProfiles.filter((p) => p.cargo).map((p) => [p.nombre, p.cargo]),
       ) as Record<string, string>,
-    [store.profiles],
+    [colaboradorProfiles],
   );
 
   const scopeTasks = useMemo(
