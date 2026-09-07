@@ -46,6 +46,8 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
   const [userId, setUserId] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
+  const [reactions, setReactions] = useState<ReactionRow[]>([]);
+
   const load = useCallback(async () => {
     const { data, error: err } = await supabase
       .from("task_comments")
@@ -54,6 +56,16 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
       .order("created_at", { ascending: true });
     if (err) setError(err.message);
     else setComments((data ?? []) as CommentRow[]);
+    const ids = (data ?? []).map((c) => c.id);
+    if (ids.length > 0) {
+      const { data: reacts } = await supabase
+        .from("comment_reactions")
+        .select("*")
+        .in("comment_id", ids);
+      setReactions((reacts ?? []) as ReactionRow[]);
+    } else {
+      setReactions([]);
+    }
     setLoading(false);
   }, [taskId]);
 
