@@ -16,6 +16,16 @@ interface CommentRow {
   created_at: string;
 }
 
+interface ReactionRow {
+  id: string;
+  comment_id: string;
+  user_id: string;
+  user_name: string;
+  emoji: string;
+}
+
+const EMOJIS = ["👍", "✅", "🎉"] as const;
+
 interface Props {
   taskId: string;
   /** Nombre visible del usuario actual (se guarda junto al comentario) */
