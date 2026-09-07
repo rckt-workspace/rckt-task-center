@@ -268,8 +268,9 @@ const ESTADO_FILL: Record<string, string> = {
   Completada: "FFD8EFDD",
 };
 
-type Row = { font?: unknown; eachCell: (cb: (cell: any) => void) => void; getCell: (i: number) => any; [k: string]: any };
-type Sheet = { columns: any[]; eachRow: (cb: (row: any, i: number) => void) => void; [k: string]: any };
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Row = any;
+type Sheet = any;
 
 function styleHeaderRow(row: Row): void {
   row.font = { bold: true, color: { argb: "FFFFFFFF" } };
