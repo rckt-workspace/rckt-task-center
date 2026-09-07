@@ -346,41 +346,82 @@ export async function exportAdminWorkbook(
   const vencidas = tasks.filter((t) => isOverdue(t.fechaLimite, t.estado)).length;
   const cumplimiento = tasks.length === 0 ? 0 : Math.round((completadas / tasks.length) * 100);
 
-  const aoa: (string | number)[][] = [
-    [title("RCKT — Reporte ejecutivo", mondayIso)],
-    [],
-    ["Indicadores"],
-    ["Total tareas", tasks.length],
-    ["Completadas", completadas],
-    ["En curso", enCurso],
-    ["Pendientes", pendientes],
-    ["Cumplimiento", `${cumplimiento}%`],
-    ["Vencidas", vencidas],
-    [],
-    ["Resumen por cliente"],
-    ["Cliente", ...SUMMARY_HEADERS.slice(1)],
-    ...summaryBody(tasks, "cliente"),
-    [],
-    ["Resumen por colaborador"],
-    ["Colaborador", ...SUMMARY_HEADERS.slice(1)],
-    ...summaryBody(tasks, "colaborador"),
-    [],
-    ["Puntos de atención"],
+  const ws = wb.addWorksheet("Resumen");
+
+  const titleRow = ws.addRow([title("RCKT — Resumen", mondayIso)]);
+  titleRow.font = { bold: true, size: 14, color: { argb: NAVY_HEX } };
+  titleRow.height = 24;
+  ws.addRow([]);
+
+  // Indicadores: número grande arriba, etiqueta debajo
+  const kpis: Array<[string, string | number]> = [
+    ["TOTAL TAREAS", tasks.length],
+    ["COMPLETADAS", completadas],
+    ["EN CURSO", enCurso],
+    ["PENDIENTES", pendientes],
+    ["CUMPLIMIENTO", `${cumplimiento}%`],
+    ["VENCIDAS", vencidas],
   ];
+  const valueRow = ws.addRow(kpis.map(([, v]) => v));
+  const labelRow = ws.addRow(kpis.map(([l]) => l));
+  valueRow.height = 26;
+  kpis.forEach((_, i) => {
+    const vc = valueRow.getCell(i + 1);
+    const lc = labelRow.getCell(i + 1);
+    vc.font = { bold: true, size: 16, color: { argb: NAVY_HEX } };
+    vc.alignment = { horizontal: "center", vertical: "middle" };
+    lc.font = { size: 8, color: { argb: "FF3A3D44" } };
+    lc.alignment = { horizontal: "center" };
+    for (const c of [vc, lc]) {
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: IVORY_HEX } };
+      c.border = {
+        top: { style: "thin", color: { argb: BORDER_HEX } },
+        left: { style: "thin", color: { argb: BORDER_HEX } },
+        right: { style: "thin", color: { argb: BORDER_HEX } },
+        bottom: { style: "thin", color: { argb: BORDER_HEX } },
+      };
+    }
+  });
+  ws.addRow([]);
+
+  const sectionTitle = (label: string) => {
+    const r = ws.addRow([label]);
+    r.font = { bold: true, size: 12, color: { argb: NAVY_HEX } };
+  };
+
+  const table = (head: string[], body: (string | number)[][]) => {
+    styleHeaderRow(ws.addRow(head));
+    body.forEach((b, i) => {
+      const r = ws.addRow(b);
+      if (i % 2 === 1) fill(r, IVORY_HEX);
+    });
+    ws.addRow([]);
+  };
+
+  sectionTitle("Resumen por cliente");
+  table(["Cliente", ...SUMMARY_HEADERS.slice(1)], summaryBody(tasks, "cliente"));
+
+  sectionTitle("Resumen por colaborador");
+  table(["Colaborador", ...SUMMARY_HEADERS.slice(1)], summaryBody(tasks, "colaborador"));
+
+  sectionTitle("Puntos de atención");
   if (puntos.length > 0) {
-    aoa.push(["Cliente", "Colaborador", "Tipo", "Motivo"]);
-    for (const p of puntos) aoa.push([p.cliente, p.colaborador, p.tipo, p.motivo || "—"]);
+    table(
+      ["Cliente", "Colaborador", "Tipo", "Motivo"],
+      puntos.map((p) => [p.cliente, p.colaborador, p.tipo, p.motivo || "—"]),
+    );
   } else {
-    aoa.push(["Sin puntos de atención registrados en este período."]);
+    ws.addRow(["Sin puntos de atención registrados en este período."]);
   }
+  autofit(ws, 60);
 
-  const wsResumen = XLSX.utils.aoa_to_sheet(aoa);
-  wsResumen["!cols"] = [{ wch: 32 }, { wch: 22 }, { wch: 14 }, { wch: 40 }, { wch: 12 }, { wch: 14 }];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsTareas, "Tareas");
-  XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
-  XLSX.writeFile(wb, `tareas_rckt_${rangeSlug(mondayIso)}.xlsx`);
+  const buffer = await wb.xlsx.writeBuffer();
+  downloadBlob(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `tareas_rckt_${rangeSlug(mondayIso)}.xlsx`,
+  );
 }
 
 /** Slug de nombre de archivo a partir del nombre del colaborador. */
