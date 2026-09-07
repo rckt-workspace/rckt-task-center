@@ -294,11 +294,50 @@ export async function exportAdminWorkbook(
     "Fecha de creación": t.createdAt ? format(new Date(t.createdAt), "dd/MM/yyyy HH:mm") : "",
   }));
 
-  const wsTareas = XLSX.utils.json_to_sheet(detalle);
-  wsTareas["!cols"] = [
-    { wch: 40 }, { wch: 22 }, { wch: 26 }, { wch: 24 }, { wch: 20 }, { wch: 12 },
-    { wch: 50 }, { wch: 30 }, { wch: 12 }, { wch: 40 }, { wch: 12 }, { wch: 60 }, { wch: 18 },
-  ];
+  const ExcelJS = (await import("exceljs")).default;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "RCKT";
+
+  const columns = Object.keys(
+    detalle[0] ?? {
+      Tarea: "",
+      Colaborador: "",
+      Cliente: "",
+      "Área": "",
+      "Fecha límite": "",
+      Estado: "",
+      "Entregable/Observaciones": "",
+      Adjuntos: "",
+      "N° adjuntos": "",
+      Enlaces: "",
+      "Nota de voz": "",
+      Comentarios: "",
+      "Fecha de creación": "",
+    },
+  );
+
+  const wsTareas = wb.addWorksheet("Tareas", {
+    views: [{ state: "frozen", ySplit: 1 }],
+  });
+  wsTareas.columns = columns.map((c) => ({ header: c, key: c }));
+  for (const row of detalle) wsTareas.addRow(row);
+
+  styleHeaderRow(wsTareas.getRow(1));
+
+  const estadoCol = columns.indexOf("Estado") + 1;
+  wsTareas.eachRow((row, i) => {
+    if (i === 1) return;
+    row.alignment = { vertical: "top", wrapText: true };
+    if (i % 2 === 0) fill(row, IVORY_HEX);
+    const estadoCell = row.getCell(estadoCol);
+    const bg = ESTADO_FILL[String(estadoCell.value ?? "")];
+    if (bg) {
+      estadoCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bg } };
+      estadoCell.font = { bold: true, color: { argb: "FF1B2A4A" } };
+      estadoCell.alignment = { vertical: "middle", horizontal: "center" };
+    }
+  });
+  autofit(wsTareas);
 
   // Hoja resumen
   const completadas = tasks.filter((t) => t.estado === "Completada").length;
