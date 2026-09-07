@@ -256,6 +256,59 @@ export function exportTasksExcel(tasks: Task[], mondayIso: string | null): void 
   exportExcel(tasks, mondayIso, ADMIN_OPTS);
 }
 
+// ---- Estilos del Excel de administración ----
+
+const NAVY_HEX = "FF1B2A4A";
+const IVORY_HEX = "FFFAF7F0";
+const BORDER_HEX = "FFE5E1D8";
+
+const ESTADO_FILL: Record<string, string> = {
+  Pendiente: "FFF9DADA",
+  "En curso": "FFDCE6F7",
+  Completada: "FFD8EFDD",
+};
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Row = any;
+type Sheet = any;
+
+function styleHeaderRow(row: Row): void {
+  row.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  row.alignment = { vertical: "middle", horizontal: "left" };
+  row.eachCell((cell: any) => {
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY_HEX } };
+    cell.border = { bottom: { style: "thin", color: { argb: BORDER_HEX } } };
+  });
+}
+
+function fill(row: Row, argb: string): void {
+  row.eachCell((cell: any) => {
+    if (!cell.fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb } };
+  });
+}
+
+/** Ajusta el ancho de cada columna al contenido más largo. */
+function autofit(sheet: Sheet, max = 55): void {
+  sheet.columns.forEach((col: any) => {
+    let width = 10;
+    col.eachCell?.({ includeEmpty: false }, (cell: any) => {
+      const text = String(cell.value ?? "");
+      const longest = Math.max(...text.split("\n").map((l) => l.length));
+      width = Math.max(width, longest + 2);
+    });
+    col.width = Math.min(width, max);
+  });
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /** Excel completo de administración: hoja "Tareas" + hoja "Resumen". */
 export async function exportAdminWorkbook(
   tasks: Task[],
@@ -294,11 +347,50 @@ export async function exportAdminWorkbook(
     "Fecha de creación": t.createdAt ? format(new Date(t.createdAt), "dd/MM/yyyy HH:mm") : "",
   }));
 
-  const wsTareas = XLSX.utils.json_to_sheet(detalle);
-  wsTareas["!cols"] = [
-    { wch: 40 }, { wch: 22 }, { wch: 26 }, { wch: 24 }, { wch: 20 }, { wch: 12 },
-    { wch: 50 }, { wch: 30 }, { wch: 12 }, { wch: 40 }, { wch: 12 }, { wch: 60 }, { wch: 18 },
-  ];
+  const ExcelJS = (await import("exceljs")).default;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "RCKT";
+
+  const columns = Object.keys(
+    detalle[0] ?? {
+      Tarea: "",
+      Colaborador: "",
+      Cliente: "",
+      "Área": "",
+      "Fecha límite": "",
+      Estado: "",
+      "Entregable/Observaciones": "",
+      Adjuntos: "",
+      "N° adjuntos": "",
+      Enlaces: "",
+      "Nota de voz": "",
+      Comentarios: "",
+      "Fecha de creación": "",
+    },
+  );
+
+  const wsTareas = wb.addWorksheet("Tareas", {
+    views: [{ state: "frozen", ySplit: 1 }],
+  });
+  wsTareas.columns = columns.map((c) => ({ header: c, key: c }));
+  for (const row of detalle) wsTareas.addRow(row);
+
+  styleHeaderRow(wsTareas.getRow(1));
+
+  const estadoCol = columns.indexOf("Estado") + 1;
+  wsTareas.eachRow((row, i) => {
+    if (i === 1) return;
+    row.alignment = { vertical: "top", wrapText: true };
+    if (i % 2 === 0) fill(row, IVORY_HEX);
+    const estadoCell = row.getCell(estadoCol);
+    const bg = ESTADO_FILL[String(estadoCell.value ?? "")];
+    if (bg) {
+      estadoCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bg } };
+      estadoCell.font = { bold: true, color: { argb: "FF1B2A4A" } };
+      estadoCell.alignment = { vertical: "middle", horizontal: "center" };
+    }
+  });
+  autofit(wsTareas);
 
   // Hoja resumen
   const completadas = tasks.filter((t) => t.estado === "Completada").length;
@@ -307,41 +399,82 @@ export async function exportAdminWorkbook(
   const vencidas = tasks.filter((t) => isOverdue(t.fechaLimite, t.estado)).length;
   const cumplimiento = tasks.length === 0 ? 0 : Math.round((completadas / tasks.length) * 100);
 
-  const aoa: (string | number)[][] = [
-    [title("RCKT — Reporte ejecutivo", mondayIso)],
-    [],
-    ["Indicadores"],
-    ["Total tareas", tasks.length],
-    ["Completadas", completadas],
-    ["En curso", enCurso],
-    ["Pendientes", pendientes],
-    ["Cumplimiento", `${cumplimiento}%`],
-    ["Vencidas", vencidas],
-    [],
-    ["Resumen por cliente"],
-    ["Cliente", ...SUMMARY_HEADERS.slice(1)],
-    ...summaryBody(tasks, "cliente"),
-    [],
-    ["Resumen por colaborador"],
-    ["Colaborador", ...SUMMARY_HEADERS.slice(1)],
-    ...summaryBody(tasks, "colaborador"),
-    [],
-    ["Puntos de atención"],
+  const ws = wb.addWorksheet("Resumen");
+
+  const titleRow = ws.addRow([title("RCKT — Resumen", mondayIso)]);
+  titleRow.font = { bold: true, size: 14, color: { argb: NAVY_HEX } };
+  titleRow.height = 24;
+  ws.addRow([]);
+
+  // Indicadores: número grande arriba, etiqueta debajo
+  const kpis: Array<[string, string | number]> = [
+    ["TOTAL TAREAS", tasks.length],
+    ["COMPLETADAS", completadas],
+    ["EN CURSO", enCurso],
+    ["PENDIENTES", pendientes],
+    ["CUMPLIMIENTO", `${cumplimiento}%`],
+    ["VENCIDAS", vencidas],
   ];
+  const valueRow = ws.addRow(kpis.map(([, v]) => v));
+  const labelRow = ws.addRow(kpis.map(([l]) => l));
+  valueRow.height = 26;
+  kpis.forEach((_, i) => {
+    const vc = valueRow.getCell(i + 1);
+    const lc = labelRow.getCell(i + 1);
+    vc.font = { bold: true, size: 16, color: { argb: NAVY_HEX } };
+    vc.alignment = { horizontal: "center", vertical: "middle" };
+    lc.font = { size: 8, color: { argb: "FF3A3D44" } };
+    lc.alignment = { horizontal: "center" };
+    for (const c of [vc, lc]) {
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: IVORY_HEX } };
+      c.border = {
+        top: { style: "thin", color: { argb: BORDER_HEX } },
+        left: { style: "thin", color: { argb: BORDER_HEX } },
+        right: { style: "thin", color: { argb: BORDER_HEX } },
+        bottom: { style: "thin", color: { argb: BORDER_HEX } },
+      };
+    }
+  });
+  ws.addRow([]);
+
+  const sectionTitle = (label: string) => {
+    const r = ws.addRow([label]);
+    r.font = { bold: true, size: 12, color: { argb: NAVY_HEX } };
+  };
+
+  const table = (head: string[], body: (string | number)[][]) => {
+    styleHeaderRow(ws.addRow(head));
+    body.forEach((b, i) => {
+      const r = ws.addRow(b);
+      if (i % 2 === 1) fill(r, IVORY_HEX);
+    });
+    ws.addRow([]);
+  };
+
+  sectionTitle("Resumen por cliente");
+  table(["Cliente", ...SUMMARY_HEADERS.slice(1)], summaryBody(tasks, "cliente"));
+
+  sectionTitle("Resumen por colaborador");
+  table(["Colaborador", ...SUMMARY_HEADERS.slice(1)], summaryBody(tasks, "colaborador"));
+
+  sectionTitle("Puntos de atención");
   if (puntos.length > 0) {
-    aoa.push(["Cliente", "Colaborador", "Tipo", "Motivo"]);
-    for (const p of puntos) aoa.push([p.cliente, p.colaborador, p.tipo, p.motivo || "—"]);
+    table(
+      ["Cliente", "Colaborador", "Tipo", "Motivo"],
+      puntos.map((p) => [p.cliente, p.colaborador, p.tipo, p.motivo || "—"]),
+    );
   } else {
-    aoa.push(["Sin puntos de atención registrados en este período."]);
+    ws.addRow(["Sin puntos de atención registrados en este período."]);
   }
+  autofit(ws, 60);
 
-  const wsResumen = XLSX.utils.aoa_to_sheet(aoa);
-  wsResumen["!cols"] = [{ wch: 32 }, { wch: 22 }, { wch: 14 }, { wch: 40 }, { wch: 12 }, { wch: 14 }];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsTareas, "Tareas");
-  XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
-  XLSX.writeFile(wb, `tareas_rckt_${rangeSlug(mondayIso)}.xlsx`);
+  const buffer = await wb.xlsx.writeBuffer();
+  downloadBlob(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `tareas_rckt_${rangeSlug(mondayIso)}.xlsx`,
+  );
 }
 
 /** Slug de nombre de archivo a partir del nombre del colaborador. */
