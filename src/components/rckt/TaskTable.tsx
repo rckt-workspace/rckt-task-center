@@ -191,11 +191,12 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   Abrir tarea
                 </Button>
               ) : null}
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t.cliente} · {t.area}
-                {showColaborador ? ` · ${t.colaborador}` : ""}
-                {showSemana ? ` · Semana ${weekLabel(t.semana)}` : ""}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                <ClienteTag cliente={t.cliente} />
+                <AreaTag area={t.area} />
+                {showColaborador ? <PersonChip name={t.colaborador} size="xs" /> : null}
+                {showSemana ? <span>Semana {weekLabel(t.semana)}</span> : null}
+              </div>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <dt className="text-xs text-muted-foreground">Fecha límite</dt>
