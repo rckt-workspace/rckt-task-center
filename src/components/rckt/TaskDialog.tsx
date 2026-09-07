@@ -69,7 +69,7 @@ const emptyValues = (colaborador?: Colaborador): TaskInput => ({
   area: AREAS[0],
   cliente: CLIENTES[0],
   tarea: "",
-  estado: "En curso",
+  estado: "Pendiente",
   fechaLimite: "",
   horaLimite: null,
   fechaEntrega: null,
