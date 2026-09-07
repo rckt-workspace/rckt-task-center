@@ -192,7 +192,7 @@ export function useAppStore() {
       supabase.from("task_attachments").select("*").order("created_at"),
     ]);
     setIsAdmin((myRolesRes.data ?? []).some((r) => r.role === "admin"));
-    const roleMap = new Map((allRolesRes.data ?? []).map((r) => [r.user_id, r.role as import("./types").Rol]));
+    const roleMap = new Map((allRolesRes.data ?? []).map((r) => [r.user_id, r.role as Rol]));
     setProfiles(
       (profilesRes.data ?? []).map((p) => ({
         id: p.id,
