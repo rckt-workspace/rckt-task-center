@@ -16,6 +16,16 @@ interface CommentRow {
   created_at: string;
 }
 
+interface ReactionRow {
+  id: string;
+  comment_id: string;
+  user_id: string;
+  user_name: string;
+  emoji: string;
+}
+
+const EMOJIS = ["👍", "✅", "🎉"] as const;
+
 interface Props {
   taskId: string;
   /** Nombre visible del usuario actual (se guarda junto al comentario) */
@@ -36,6 +46,8 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
   const [userId, setUserId] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
+  const [reactions, setReactions] = useState<ReactionRow[]>([]);
+
   const load = useCallback(async () => {
     const { data, error: err } = await supabase
       .from("task_comments")
@@ -44,6 +56,16 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
       .order("created_at", { ascending: true });
     if (err) setError(err.message);
     else setComments((data ?? []) as CommentRow[]);
+    const ids = (data ?? []).map((c) => c.id);
+    if (ids.length > 0) {
+      const { data: reacts } = await supabase
+        .from("comment_reactions")
+        .select("*")
+        .in("comment_id", ids);
+      setReactions((reacts ?? []) as ReactionRow[]);
+    } else {
+      setReactions([]);
+    }
     setLoading(false);
   }, [taskId]);
 
@@ -81,7 +103,36 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
   const remove = async (id: string) => {
     const { error: err } = await supabase.from("task_comments").delete().eq("id", id);
     if (err) setError(err.message);
-    else setComments((prev) => prev.filter((c) => c.id !== id));
+    else {
+      setComments((prev) => prev.filter((c) => c.id !== id));
+      setReactions((prev) => prev.filter((r) => r.comment_id !== id));
+    }
+  };
+
+  const toggleReaction = async (commentId: string, emoji: string) => {
+    if (!userId) return;
+    const existing = reactions.find(
+      (r) => r.comment_id === commentId && r.user_id === userId && r.emoji === emoji,
+    );
+    if (existing) {
+      setReactions((prev) => prev.filter((r) => r.id !== existing.id));
+      const { error: err } = await supabase
+        .from("comment_reactions")
+        .delete()
+        .eq("id", existing.id);
+      if (err) {
+        setError(err.message);
+        void load();
+      }
+      return;
+    }
+    const { data, error: err } = await supabase
+      .from("comment_reactions")
+      .insert({ comment_id: commentId, user_id: userId, user_name: authorName, emoji })
+      .select("*")
+      .single();
+    if (err) setError(err.message);
+    else if (data) setReactions((prev) => [...prev, data as ReactionRow]);
   };
 
   return (
@@ -132,6 +183,47 @@ export function TaskComments({ taskId, authorName, isAdmin }: Props) {
                   </span>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap break-words text-foreground/90">{c.body}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  {EMOJIS.map((emoji) => {
+                    const who = reactions.filter(
+                      (r) => r.comment_id === c.id && r.emoji === emoji,
+                    );
+                    const active = who.some((r) => r.user_id === userId);
+                    if (who.length === 0 && !userId) return null;
+                    return (
+                      <button
+                        key={emoji}
+                        type="button"
+                        title={
+                          who.length > 0
+                            ? who.map((r) => r.user_name || "—").join(", ")
+                            : `Reaccionar con ${emoji}`
+                        }
+                        aria-pressed={active}
+                        aria-label={`Reaccionar con ${emoji}`}
+                        onClick={() => void toggleReaction(c.id, emoji)}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
+                          active
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground hover:bg-secondary",
+                          who.length === 0 && "opacity-60 group-hover:opacity-100",
+                        )}
+                      >
+                        <span aria-hidden>{emoji}</span>
+                        {who.length > 0 ? <span>{who.length}</span> : null}
+                      </button>
+                    );
+                  })}
+                  {reactions.some((r) => r.comment_id === c.id) ? (
+                    <span className="ml-1 truncate text-[11px] text-muted-foreground">
+                      {reactions
+                        .filter((r) => r.comment_id === c.id)
+                        .map((r) => `${r.emoji} ${r.user_name || "—"}`)
+                        .join(" · ")}
+                    </span>
+                  ) : null}
+                </div>
               </li>
             );
           })
