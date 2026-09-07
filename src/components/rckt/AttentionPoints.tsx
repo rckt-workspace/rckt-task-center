@@ -1,5 +1,8 @@
-import { AlertOctagon, Clock, Pencil, Plus, Trash2, UserCog } from "lucide-react";
+import { AlertOctagon, Clock, Pencil, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "./EmptyState";
+import { PersonAvatar } from "./PersonAvatar";
+import { ClienteTag } from "./EntityTags";
 import { TIPOS_ATENCION } from "@/lib/rckt/types";
 import type { AttentionPoint, Task, TipoAtencion } from "@/lib/rckt/types";
 import { cn } from "@/lib/utils";
@@ -30,11 +33,11 @@ export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete }: P
       </div>
 
       {puntos.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            No hay puntos de atención registrados en esta semana.
-          </p>
-        </div>
+        <EmptyState
+          icon={ShieldCheck}
+          title="Semana sin puntos de atención"
+          description="Nada bloqueado por ahora. Si algo requiere una decisión o espera al cliente, regístralo aquí."
+        />
       ) : (
         <div className="grid gap-3 lg:grid-cols-3">
           {TIPOS_ATENCION.map((tipo) => {
@@ -91,9 +94,13 @@ export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete }: P
                             </Button>
                           </div>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {p.cliente} · {p.colaborador}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                          <ClienteTag cliente={p.cliente} />
+                          <span className="inline-flex items-center gap-1.5">
+                            <PersonAvatar name={p.colaborador} size="xs" />
+                            {p.colaborador}
+                          </span>
+                        </div>
                         <p className="mt-2 text-sm">{p.motivo}</p>
                       </article>
                     );

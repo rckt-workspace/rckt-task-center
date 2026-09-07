@@ -1,4 +1,7 @@
-import { AlertTriangle, Eye, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, ClipboardList, Eye, Pencil, Trash2 } from "lucide-react";
+import { EmptyState } from "./EmptyState";
+import { PersonChip } from "./PersonAvatar";
+import { AreaTag, ClienteTag } from "./EntityTags";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -26,9 +29,11 @@ interface Props {
 export function TaskTable({ tasks, showColaborador = false, showSemana = false, onEdit, onOpen, onDelete }: Props) {
   if (tasks.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
-        <p className="text-sm text-muted-foreground">No hay tareas que coincidan con esta semana y filtros.</p>
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title="Agenda despejada"
+        description="No hay tareas que coincidan con esta semana y filtros. Cambia la semana o crea una nueva tarea."
+      />
     );
   }
 
@@ -69,10 +74,16 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                     </TableCell>
                   ) : null}
                   {showColaborador ? (
-                    <TableCell className="whitespace-nowrap">{t.colaborador}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <PersonChip name={t.colaborador} />
+                    </TableCell>
                   ) : null}
-                  <TableCell>{t.cliente}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.area}</TableCell>
+                  <TableCell>
+                    <ClienteTag cliente={t.cliente} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <AreaTag area={t.area} />
+                  </TableCell>
                   <TableCell className="font-medium">{t.tarea}</TableCell>
                   <TableCell
                     className={cn("whitespace-nowrap", overdue && "font-medium text-overdue")}
@@ -180,11 +191,12 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
                   Abrir tarea
                 </Button>
               ) : null}
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t.cliente} · {t.area}
-                {showColaborador ? ` · ${t.colaborador}` : ""}
-                {showSemana ? ` · Semana ${weekLabel(t.semana)}` : ""}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                <ClienteTag cliente={t.cliente} />
+                <AreaTag area={t.area} />
+                {showColaborador ? <PersonChip name={t.colaborador} size="xs" /> : null}
+                {showSemana ? <span>Semana {weekLabel(t.semana)}</span> : null}
+              </div>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <dt className="text-xs text-muted-foreground">Fecha límite</dt>

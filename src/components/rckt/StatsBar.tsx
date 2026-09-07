@@ -16,10 +16,12 @@ function Stat({
   label,
   value,
   tone,
+  progress,
 }: {
   label: string;
   value: string | number;
   tone?: "success" | "info" | "warn" | "overdue" | "accent";
+  progress?: number;
 }) {
   const toneClass =
     tone === "success"
@@ -39,6 +41,30 @@ function Stat({
       <p className={cn("mt-1 font-display text-2xl leading-none font-semibold", toneClass)}>
         {value}
       </p>
+      {progress !== undefined ? (
+        <div
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={label}
+          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary"
+        >
+          <div
+            className={cn(
+              "h-full rounded-full transition-[width] duration-700 ease-out",
+              progress >= 80
+                ? "bg-success"
+                : progress >= 50
+                  ? "bg-info"
+                  : progress >= 25
+                    ? "bg-warn"
+                    : "bg-overdue",
+            )}
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -51,7 +77,12 @@ export function StatsBar({ tasks }: { tasks: Task[] }) {
       <Stat label="Completadas" value={s.completadas} tone="success" />
       <Stat label="En curso" value={s.enCurso} tone="info" />
       <Stat label="Pendientes" value={s.pendientes} tone="warn" />
-      <Stat label="Cumplimiento" value={`${s.cumplimiento}%`} tone="accent" />
+      <Stat
+        label="Cumplimiento"
+        value={`${s.cumplimiento}%`}
+        tone="accent"
+        progress={s.cumplimiento}
+      />
       <Stat label="Vencidas" value={s.vencidas} tone="overdue" />
     </div>
   );

@@ -185,3 +185,52 @@
     letter-spacing: -0.015em;
   }
 }
+
+/* Micro-animación al completar una tarea */
+@keyframes rckt-check-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes rckt-confetti-fly {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--rckt-x)), calc(-50% + var(--rckt-y))) scale(1) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.rckt-check-pop {
+  animation: rckt-check-pop 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.rckt-confetti {
+  animation: rckt-confetti-fly 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rckt-check-pop,
+  .rckt-confetti {
+    animation-duration: 0.01ms;
+  }
+}

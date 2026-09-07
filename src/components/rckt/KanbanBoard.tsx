@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { AlertTriangle, CalendarClock, GripVertical, User } from "lucide-react";
+import { AlertTriangle, CalendarClock, ClipboardList, GripVertical } from "lucide-react";
 import { EstadoBadge } from "./EstadoBadge";
+import { EmptyState } from "./EmptyState";
+import { PersonChip } from "./PersonAvatar";
+import { ClienteTag } from "./EntityTags";
 import { formatFechaHora, isOverdue } from "@/lib/rckt/dates";
 
 import type { Estado, Task } from "@/lib/rckt/types";
@@ -49,9 +52,11 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card px-6 py-14 text-center">
-        <p className="text-sm text-muted-foreground">No hay tareas que coincidan con esta semana y filtros.</p>
-      </div>
+      <EmptyState
+        icon={ClipboardList}
+        title="Tablero en blanco"
+        description="No hay tareas que coincidan con esta semana y filtros."
+      />
     );
   }
 
@@ -125,7 +130,10 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
                         <GripVertical className="mt-0.5 size-4 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium leading-snug">{t.tarea}</p>
-                          <p className="mt-1 truncate text-xs text-muted-foreground">{t.cliente}</p>
+                          <ClienteTag
+                            cliente={t.cliente}
+                            className="mt-1 text-xs text-muted-foreground"
+                          />
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                             <span
                               className={cn(
@@ -141,10 +149,11 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
                               {formatFechaHora(t.fechaLimite, t.horaLimite)}
                             </span>
                             {showColaborador ? (
-                              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                <User className="size-3.5" />
-                                {t.colaborador}
-                              </span>
+                              <PersonChip
+                                name={t.colaborador}
+                                size="xs"
+                                className="text-muted-foreground"
+                              />
                             ) : null}
                           </div>
                         </div>

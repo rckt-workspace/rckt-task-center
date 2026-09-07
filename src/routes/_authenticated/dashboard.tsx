@@ -47,6 +47,7 @@ import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { WorkloadWidget } from "@/components/rckt/WorkloadWidget";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
+import { CompletionCelebration } from "@/components/rckt/CompletionCelebration";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
@@ -103,10 +104,12 @@ function Dashboard() {
   const [historico, setHistorico] = useState(false);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const [soloHoy, setSoloHoy] = useState(false);
+  const [celebrate, setCelebrate] = useState(0);
 
   const changeEstado = async (t: Task, estado: Estado) => {
     try {
       await store.updateTask(t.id, { estado });
+      if (estado === "Completada") setCelebrate((n) => n + 1);
       toast.success(
         estado === "Completada" ? "Tarea marcada como completada" : `Estado actualizado a "${estado}"`,
       );
@@ -229,6 +232,9 @@ function Dashboard() {
       const movesWeek = !historico && targetWeek !== semana;
       if (editing) {
         await store.updateTask(editing.id, values);
+        if (values.estado === "Completada" && editing.estado !== "Completada") {
+          setCelebrate((n) => n + 1);
+        }
         toast.success(
           movesWeek ? `Tarea actualizada · se movió a la semana del ${weekLabel(targetWeek)}` : "Tarea actualizada",
           toastOpts,
@@ -292,6 +298,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
+      <CompletionCelebration trigger={celebrate} />
       <header className="border-b border-header bg-header text-header-foreground">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 px-4 py-4 sm:px-6">
           <div className="mr-auto">
