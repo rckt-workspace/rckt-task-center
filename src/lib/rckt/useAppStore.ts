@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { mondayOf, fromISO, toISO, todayISO } from "./dates";
-import type { AppData, AttentionPoint, Perfil, Task } from "./types";
+import type { AppData, AttentionPoint, Perfil, Rol, Task } from "./types";
 import type { Database } from "@/integrations/supabase/types";
 import { notifyTaskAssigned } from "@/lib/notify.functions";
 
@@ -183,21 +183,27 @@ export function useAppStore() {
       setLoadedFor(null);
       return;
     }
-    const [rolesRes, profilesRes, tasksRes, pointsRes, attachRes] = await Promise.all([
+    const [myRolesRes, allRolesRes, profilesRes, tasksRes, pointsRes, attachRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase.from("user_roles").select("user_id, role"),
       supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
       supabase.from("tasks").select("*").order("fecha_limite"),
       supabase.from("attention_points").select("*").order("created_at"),
       supabase.from("task_attachments").select("*").order("created_at"),
     ]);
-    setIsAdmin((rolesRes.data ?? []).some((r) => r.role === "admin"));
+    setIsAdmin((myRolesRes.data ?? []).some((r) => r.role === "admin"));
+    const roleMap = new Map((allRolesRes.data ?? []).map((r) => [r.user_id, r.role as Rol]));
     setProfiles(
-      (profilesRes.data ?? []).map((p) => ({
-        id: p.id,
-        nombre: p.full_name || p.email,
-        email: p.email,
-        cargo: p.cargo,
-      })),
+      (profilesRes.data ?? []).map((p) => {
+        const role = roleMap.get(p.id);
+        return {
+          id: p.id,
+          nombre: p.full_name || p.email,
+          email: p.email,
+          cargo: p.cargo,
+          ...(role ? { role } : {}),
+        };
+      }),
     );
     setTaskRows((tasksRes.data ?? []) as TaskRow[]);
     setPointRows((pointsRes.data ?? []) as PointRow[]);

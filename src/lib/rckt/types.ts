@@ -42,6 +42,7 @@ export interface Perfil {
   nombre: string;
   email: string;
   cargo: string;
+  role?: Rol;
 }
 
 export interface Attachment {
