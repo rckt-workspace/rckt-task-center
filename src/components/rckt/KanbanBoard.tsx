@@ -149,10 +149,11 @@ export function KanbanBoard({ tasks, showColaborador = false, onOpen, onChangeEs
                               {formatFechaHora(t.fechaLimite, t.horaLimite)}
                             </span>
                             {showColaborador ? (
-                              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                <User className="size-3.5" />
-                                {t.colaborador}
-                              </span>
+                              <PersonChip
+                                name={t.colaborador}
+                                size="xs"
+                                className="text-muted-foreground"
+                              />
                             ) : null}
                           </div>
                         </div>
