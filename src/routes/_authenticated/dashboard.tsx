@@ -232,6 +232,9 @@ function Dashboard() {
       const movesWeek = !historico && targetWeek !== semana;
       if (editing) {
         await store.updateTask(editing.id, values);
+        if (values.estado === "Completada" && editing.estado !== "Completada") {
+          setCelebrate((n) => n + 1);
+        }
         toast.success(
           movesWeek ? `Tarea actualizada · se movió a la semana del ${weekLabel(targetWeek)}` : "Tarea actualizada",
           toastOpts,
