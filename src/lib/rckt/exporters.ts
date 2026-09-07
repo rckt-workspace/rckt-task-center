@@ -256,6 +256,58 @@ export function exportTasksExcel(tasks: Task[], mondayIso: string | null): void 
   exportExcel(tasks, mondayIso, ADMIN_OPTS);
 }
 
+// ---- Estilos del Excel de administración ----
+
+const NAVY_HEX = "FF1B2A4A";
+const IVORY_HEX = "FFFAF7F0";
+const BORDER_HEX = "FFE5E1D8";
+
+const ESTADO_FILL: Record<string, string> = {
+  Pendiente: "FFF9DADA",
+  "En curso": "FFDCE6F7",
+  Completada: "FFD8EFDD",
+};
+
+type Row = { font?: unknown; eachCell: (cb: (cell: any) => void) => void; getCell: (i: number) => any; [k: string]: any };
+type Sheet = { columns: any[]; eachRow: (cb: (row: any, i: number) => void) => void; [k: string]: any };
+
+function styleHeaderRow(row: Row): void {
+  row.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  row.alignment = { vertical: "middle", horizontal: "left" };
+  row.eachCell((cell) => {
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY_HEX } };
+    cell.border = { bottom: { style: "thin", color: { argb: BORDER_HEX } } };
+  });
+}
+
+function fill(row: Row, argb: string): void {
+  row.eachCell((cell) => {
+    if (!cell.fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb } };
+  });
+}
+
+/** Ajusta el ancho de cada columna al contenido más largo. */
+function autofit(sheet: Sheet, max = 55): void {
+  sheet.columns.forEach((col: any) => {
+    let width = 10;
+    col.eachCell?.({ includeEmpty: false }, (cell: any) => {
+      const text = String(cell.value ?? "");
+      const longest = Math.max(...text.split("\n").map((l) => l.length));
+      width = Math.max(width, longest + 2);
+    });
+    col.width = Math.min(width, max);
+  });
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /** Excel completo de administración: hoja "Tareas" + hoja "Resumen". */
 export async function exportAdminWorkbook(
   tasks: Task[],
