@@ -548,7 +548,7 @@ function Dashboard() {
         {isCoord ? (
           <section className="max-w-xl">
             <WorkloadWidget
-              profiles={store.profiles}
+              profiles={colaboradorProfiles}
               tasks={store.data.tasks}
               currentUserId={store.session?.user.id}
               selected={fColab === ALL ? null : fColab}
