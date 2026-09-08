@@ -19,9 +19,68 @@ interface Props {
   onCreate: () => void;
   onEdit: (p: AttentionPoint) => void;
   onDelete: (p: AttentionPoint) => void;
+  view?: "lista" | "tablero";
 }
 
-export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete }: Props) {
+function PuntoRow({
+  p,
+  task,
+  onEdit,
+  onDelete,
+}: {
+  p: AttentionPoint;
+  task?: Task;
+  onEdit: (p: AttentionPoint) => void;
+  onDelete: (p: AttentionPoint) => void;
+}) {
+  const { chip, icon: Icon } = tipoStyles[p.tipo];
+  return (
+    <article className="flex flex-col gap-3 rounded-lg border border-border bg-background/60 p-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+            chip,
+          )}
+        >
+          <Icon className="size-3.5" />
+          {p.tipo}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">{task ? task.tarea : "Tarea no disponible"}</p>
+          <p className="text-sm text-foreground/90">{p.motivo}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <ClienteTag cliente={p.cliente} />
+            <span className="inline-flex items-center gap-1.5">
+              <PersonAvatar name={p.colaborador} size="xs" />
+              {p.colaborador}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="flex shrink-0 justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Editar punto de atención"
+          onClick={() => onEdit(p)}
+        >
+          <Pencil className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Eliminar punto de atención"
+          onClick={() => onDelete(p)}
+        >
+          <Trash2 className="size-3.5 text-destructive" />
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+export function AttentionPoints({ puntos, tasks, onCreate, onEdit, onDelete, view = "tablero" }: Props) {
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
