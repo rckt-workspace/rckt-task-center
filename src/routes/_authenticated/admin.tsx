@@ -67,13 +67,17 @@ function AdminPage() {
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"admin" | "colaborador">("colaborador");
   const [cargo, setCargo] = useState<string>(AREAS[0]);
+  const [cargoOtro, setCargoOtro] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [editing, setEditing] = useState<{ id: string; nombre: string; cargo: string } | null>(
     null,
   );
   const [editCargo, setEditCargo] = useState<string>(AREAS[0]);
+  const [editCargoOtro, setEditCargoOtro] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+
+  const OTRO = "__otro__";
 
   if (!store.hydrated) return <div className="min-h-screen" />;
 
@@ -95,15 +99,21 @@ function AdminPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cargoFinal = cargo === OTRO ? cargoOtro.trim() : cargo;
+    if (!cargoFinal) {
+      toast.error("Escribe el cargo personalizado");
+      return;
+    }
     setSaving(true);
     try {
-      await createUser({ data: { email, password, fullName, role, cargo } });
+      await createUser({ data: { email, password, fullName, role, cargo: cargoFinal } });
       toast.success("Cuenta creada");
       setEmail("");
       setPassword("");
       setFullName("");
       setRole("colaborador");
       setCargo(AREAS[0]);
+      setCargoOtro("");
       await store.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo crear la cuenta");
@@ -113,14 +123,21 @@ function AdminPage() {
 
   const openEdit = (p: { id: string; nombre: string; cargo: string }) => {
     setEditing(p);
-    setEditCargo(p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]) ? p.cargo : AREAS[0]);
+    const esLista = p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]);
+    setEditCargo(esLista ? p.cargo : p.cargo ? OTRO : AREAS[0]);
+    setEditCargoOtro(esLista ? "" : p.cargo || "");
   };
 
   const submitEdit = async () => {
     if (!editing) return;
+    const cargoFinal = editCargo === OTRO ? editCargoOtro.trim() : editCargo;
+    if (!cargoFinal) {
+      toast.error("Escribe el cargo personalizado");
+      return;
+    }
     setSavingEdit(true);
     try {
-      await saveCargo({ data: { userId: editing.id, cargo: editCargo } });
+      await saveCargo({ data: { userId: editing.id, cargo: cargoFinal } });
       toast.success("Cargo actualizado");
       setEditing(null);
       await store.refresh();
@@ -215,8 +232,18 @@ function AdminPage() {
                     {a}
                   </SelectItem>
                 ))}
+                <SelectItem value={OTRO}>Otro (escribir)</SelectItem>
               </SelectContent>
             </Select>
+            {cargo === OTRO && (
+              <Input
+                aria-label="Cargo personalizado"
+                placeholder="Escribe el cargo"
+                value={cargoOtro}
+                onChange={(e) => setCargoOtro(e.target.value)}
+                required
+              />
+            )}
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" className="gap-2" disabled={saving}>
@@ -370,8 +397,17 @@ function AdminPage() {
                     {a}
                   </SelectItem>
                 ))}
+                <SelectItem value={OTRO}>Otro (escribir)</SelectItem>
               </SelectContent>
             </Select>
+            {editCargo === OTRO && (
+              <Input
+                aria-label="Cargo personalizado"
+                placeholder="Escribe el cargo"
+                value={editCargoOtro}
+                onChange={(e) => setEditCargoOtro(e.target.value)}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>
