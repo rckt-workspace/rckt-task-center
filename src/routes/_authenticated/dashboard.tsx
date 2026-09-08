@@ -648,7 +648,7 @@ function Dashboard() {
                 ? historico
                   ? "Todas las tareas (histórico)"
                   : "Todas las tareas"
-                : "Mis tareas"}
+                : "Tareas de la semana actual"}
           </h2>
           {soloHoy && visibleTasks.length === 0 ? (
             <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
