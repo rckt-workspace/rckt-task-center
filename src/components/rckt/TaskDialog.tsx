@@ -481,7 +481,7 @@ export function TaskDialog({
 
           <div className="space-y-1.5">
             <Label>Fecha y hora límite</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <div className="min-w-0 flex-1">
                 <DateField
                   value={v.fechaLimite || null}
@@ -550,7 +550,7 @@ export function TaskDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="mt-2 gap-2"
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="size-3.5" />
