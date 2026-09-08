@@ -29,7 +29,7 @@ function PuntoRow({
   onDelete,
 }: {
   p: AttentionPoint;
-  task?: Task;
+  task?: Task | undefined;
   onEdit: (p: AttentionPoint) => void;
   onDelete: (p: AttentionPoint) => void;
 }) {
