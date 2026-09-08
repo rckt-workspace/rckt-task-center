@@ -562,6 +562,7 @@ function Dashboard() {
           <AttentionPoints
             puntos={puntos}
             tasks={store.data.tasks}
+            view={vista}
             onCreate={() => {
               setEditingPunto(null);
               setPuntoOpen(true);
