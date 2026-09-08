@@ -397,8 +397,17 @@ function AdminPage() {
                     {a}
                   </SelectItem>
                 ))}
+                <SelectItem value={OTRO}>Otro (escribir)</SelectItem>
               </SelectContent>
             </Select>
+            {editCargo === OTRO && (
+              <Input
+                aria-label="Cargo personalizado"
+                placeholder="Escribe el cargo"
+                value={editCargoOtro}
+                onChange={(e) => setEditCargoOtro(e.target.value)}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>
