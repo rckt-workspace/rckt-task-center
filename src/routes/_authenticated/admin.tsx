@@ -123,14 +123,21 @@ function AdminPage() {
 
   const openEdit = (p: { id: string; nombre: string; cargo: string }) => {
     setEditing(p);
-    setEditCargo(p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]) ? p.cargo : AREAS[0]);
+    const esLista = p.cargo && AREAS.includes(p.cargo as (typeof AREAS)[number]);
+    setEditCargo(esLista ? p.cargo : p.cargo ? OTRO : AREAS[0]);
+    setEditCargoOtro(esLista ? "" : p.cargo || "");
   };
 
   const submitEdit = async () => {
     if (!editing) return;
+    const cargoFinal = editCargo === OTRO ? editCargoOtro.trim() : editCargo;
+    if (!cargoFinal) {
+      toast.error("Escribe el cargo personalizado");
+      return;
+    }
     setSavingEdit(true);
     try {
-      await saveCargo({ data: { userId: editing.id, cargo: editCargo } });
+      await saveCargo({ data: { userId: editing.id, cargo: cargoFinal } });
       toast.success("Cargo actualizado");
       setEditing(null);
       await store.refresh();
