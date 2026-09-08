@@ -55,7 +55,7 @@ import {
   exportMyTasksPDF,
   exportAdminWorkbook,
 } from "@/lib/rckt/exporters";
-import { currentWeekISO, mondayOf, toISO, todayISO, weekLabel } from "@/lib/rckt/dates";
+import { currentWeekISO, todayISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
