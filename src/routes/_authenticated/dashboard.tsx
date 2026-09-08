@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CalendarClock,
-  CalendarPlus,
   FileDown,
   FileSpreadsheet,
   Filter,
@@ -42,7 +41,6 @@ import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
 import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
-import { DateField } from "@/components/rckt/DateField";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { WorkloadWidget } from "@/components/rckt/WorkloadWidget";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
@@ -57,7 +55,7 @@ import {
   exportMyTasksPDF,
   exportAdminWorkbook,
 } from "@/lib/rckt/exporters";
-import { currentWeekISO, mondayOf, toISO, todayISO, weekLabel } from "@/lib/rckt/dates";
+import { currentWeekISO, todayISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -92,7 +90,6 @@ function Dashboard() {
   const [viewing, setViewing] = useState<Task | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [confirmTaskOpen, setConfirmTaskOpen] = useState(false);
-  const [newWeek, setNewWeek] = useState<string | null>(null);
   const [fColab, setFColab] = useState<string>(ALL);
   const [fCliente, setFCliente] = useState<string>(ALL);
   const [fArea, setFArea] = useState<string>(ALL);
@@ -468,30 +465,6 @@ function Dashboard() {
           ) : null}
           {isCoord ? (
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2">
-                <DateField
-                  value={newWeek}
-                  onChange={(iso) =>
-                    setNewWeek(iso ? toISO(mondayOf(new Date(iso + "T00:00:00"))) : null)
-                  }
-                  placeholder="Crear semana"
-                />
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  disabled={!newWeek}
-                  onClick={() => {
-                    if (!newWeek) return;
-                    store.addSemana(newWeek);
-                    setSemana(newWeek);
-                    setNewWeek(null);
-                    toast.success("Semana abierta");
-                  }}
-                >
-                  <CalendarPlus className="size-4" />
-                  Abrir semana
-                </Button>
-              </div>
               <Button
                 className="gap-2"
                 onClick={() => {
