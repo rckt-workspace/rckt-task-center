@@ -465,30 +465,6 @@ function Dashboard() {
           ) : null}
           {isCoord ? (
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2">
-                <DateField
-                  value={newWeek}
-                  onChange={(iso) =>
-                    setNewWeek(iso ? toISO(mondayOf(new Date(iso + "T00:00:00"))) : null)
-                  }
-                  placeholder="Crear semana"
-                />
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  disabled={!newWeek}
-                  onClick={() => {
-                    if (!newWeek) return;
-                    store.addSemana(newWeek);
-                    setSemana(newWeek);
-                    setNewWeek(null);
-                    toast.success("Semana abierta");
-                  }}
-                >
-                  <CalendarPlus className="size-4" />
-                  Abrir semana
-                </Button>
-              </div>
               <Button
                 className="gap-2"
                 onClick={() => {
