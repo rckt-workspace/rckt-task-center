@@ -232,8 +232,18 @@ function AdminPage() {
                     {a}
                   </SelectItem>
                 ))}
+                <SelectItem value={OTRO}>Otro (escribir)</SelectItem>
               </SelectContent>
             </Select>
+            {cargo === OTRO && (
+              <Input
+                aria-label="Cargo personalizado"
+                placeholder="Escribe el cargo"
+                value={cargoOtro}
+                onChange={(e) => setCargoOtro(e.target.value)}
+                required
+              />
+            )}
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" className="gap-2" disabled={saving}>
