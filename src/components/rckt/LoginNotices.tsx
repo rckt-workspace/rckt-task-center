@@ -59,17 +59,19 @@ export function LoginNotices({ userId, isAdmin, tasks, hydrated, onOpenTask, onG
 
 
       if (!isAdmin) {
-        const since = prof?.tasks_seen_at ?? EPOCH;
+        const sinceTasks = prof?.tasks_seen_at ?? EPOCH;
         const nuevas = tasks
-          .filter((t) => t.assignedTo === userId && t.createdAt > since)
+          .filter((t) => t.assignedTo === userId && t.createdAt > sinceTasks)
           .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
         if (nuevas.length > 0) {
           setNotice({ kind: "tasks", tasks: nuevas });
           setOpen(true);
+          return;
         }
-        return;
       }
 
+      // Comentarios nuevos de cualquier otro autor (admin o colaborador),
+      // sobre tareas visibles para este usuario según RLS.
       const since = prof?.comments_seen_at ?? EPOCH;
       const { data: comments } = await supabase
         .from("task_comments")
@@ -91,7 +93,8 @@ export function LoginNotices({ userId, isAdmin, tasks, hydrated, onOpenTask, onG
 
   const markSeen = async () => {
     const now = new Date().toISOString();
-    const patch = isAdmin ? { comments_seen_at: now } : { tasks_seen_at: now };
+    const patch =
+      notice?.kind === "tasks" ? { tasks_seen_at: now } : { comments_seen_at: now };
     await supabase.from("profiles").update(patch).eq("id", userId);
   };
 
