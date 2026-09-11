@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sendEmail } from "@/integrations/email/email.service";
 
 const schema = z.object({ taskId: z.string().uuid() });
 
@@ -39,9 +40,6 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
     });
     if (!isAdmin) return { sent: false, reason: "forbidden" as const };
 
-    const apiKey = process.env["RESEND_API_KEY"];
-    if (!apiKey) return { sent: false, reason: "missing_api_key" as const };
-
     const { data: task, error } = await supabase
       .from("tasks")
       .select("tarea, area, cliente, estado, fecha_limite, observaciones, assigned_to")
@@ -58,7 +56,6 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
     const author = (people ?? []).find((p) => p.id === userId);
     if (!assignee?.email) return { sent: false, reason: "no_email" as const };
 
-    // Notas de voz adjuntas: enlace firmado (7 días) para escuchar/descargar
     const { data: attachments } = await supabase
       .from("task_attachments")
       .select("name, path, mime")
@@ -113,26 +110,21 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
   </table>
 </body></html>`;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from: "RCKT <onboarding@resend.dev>",
-        to: [assignee.email],
-        subject: `Nueva tarea asignada: ${task.tarea}`,
-        html,
-      }),
+    const result = await sendEmail({
+      to: assignee.email,
+      subject: `Nueva tarea asignada: ${task.tarea}`,
+      html,
     });
 
-    if (!res.ok) {
-      const body = await res.text();
-      console.error(`Resend request failed [${res.status}]: ${body}`);
-      return { sent: false, reason: "provider_error" as const, status: res.status, body };
+    if (!result.sent) {
+      console.error(`Task assignment email failed via ${result.provider}: ${result.error ?? "unknown error"}`);
+      return { sent: false, reason: "provider_error" as const, provider: result.provider, error: result.error ?? null };
     }
 
-    const json = (await res.json()) as { id?: string };
-    return { sent: true, id: json.id ?? null, to: assignee.email };
+    return {
+      sent: true,
+      id: result.messageId ?? null,
+      provider: result.provider,
+      to: assignee.email,
+    };
   });
