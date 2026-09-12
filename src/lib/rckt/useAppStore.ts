@@ -327,9 +327,13 @@ export function useAppStore() {
       const current = taskRows.find((t) => t.id === id);
       if (!current) return;
       const update: TaskUpdate = {};
+      let newAssignedId: string | undefined;
       if (patch.colaborador !== undefined) {
         const assigned = idOf(patch.colaborador);
-        if (assigned) update["assigned_to"] = assigned;
+        if (assigned) {
+          update["assigned_to"] = assigned;
+          newAssignedId = assigned;
+        }
       }
       if (patch.area !== undefined) update["area"] = patch.area;
       if (patch.cliente !== undefined) update["cliente"] = patch.cliente;
@@ -358,6 +362,23 @@ export function useAppStore() {
       if (patch.nuevosArchivos?.length) {
         await uploadAttachments(id, patch.nuevosArchivos, userId);
       }
+
+      // Notify if reassigned (don't block update if notification fails)
+      if (newAssignedId && newAssignedId !== current.assigned_to) {
+        const { notifyTaskReassigned } = await import("@/lib/notify.functions");
+        try {
+          await notifyTaskReassigned({
+            data: {
+              taskId: id,
+              newAssignedId,
+              previousAssignedId: current.assigned_to,
+            },
+          });
+        } catch (err) {
+          console.warn(`Failed to send reassignment notification: ${err}`);
+        }
+      }
+
       await refresh();
     },
     [taskRows, attachmentRows, idOf, refresh, userId],

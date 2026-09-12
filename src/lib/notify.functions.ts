@@ -77,3 +77,104 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
       return { sent: false, reason: "provider_error" as const, error: errorMsg };
     }
   });
+
+/**
+ * Notifies via email when a task is reassigned.
+ * Called when assigned_to changes. Does not block if email fails.
+ * Validates that reassignment actually occurred server-side.
+ */
+export const notifyTaskReassigned = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        taskId: z.string().uuid(),
+        newAssignedId: z.string().uuid(),
+        previousAssignedId: z.string().uuid(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { taskId, newAssignedId, previousAssignedId } = data;
+
+    try {
+      // Verify user is admin (only admins can reassign)
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+      if (!isAdmin) {
+        return { sent: false, reason: "forbidden" as const };
+      }
+
+      // Read current task state from server
+      const { data: task, error: taskError } = await supabase
+        .from("tasks")
+        .select("tarea, cliente, area, estado, fecha_limite, observaciones, assigned_to")
+        .eq("id", taskId)
+        .maybeSingle();
+
+      if (taskError || !task) {
+        return { sent: false, reason: "task_not_found" as const };
+      }
+
+      // Verify reassignment actually occurred (avoid sending email if data mismatch)
+      if (task.assigned_to !== newAssignedId) {
+        console.warn(
+          `Task reassignment mismatch for ${taskId}: server has ${task.assigned_to}, client sent ${newAssignedId}`,
+        );
+        return { sent: false, reason: "reassignment_mismatch" as const };
+      }
+
+      const { data: newAssignee } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", newAssignedId)
+        .maybeSingle();
+
+      const { data: oldAssignee } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", previousAssignedId)
+        .maybeSingle();
+
+      if (!newAssignee?.email) {
+        return { sent: false, reason: "no_email" as const };
+      }
+
+      try {
+        const { sendTaskReassignedEmail } = await import("@/integrations/email/service");
+        const result = await sendTaskReassignedEmail({
+          to: newAssignee.email,
+          name: newAssignee.full_name || newAssignee.email,
+          taskName: task.tarea,
+          client: task.cliente,
+          area: task.area,
+          status: task.estado,
+          dueDate: task.fecha_limite,
+          previousAssignee: oldAssignee?.full_name,
+          details: task.observaciones,
+        });
+
+        if (!result.sent) {
+          console.warn(`Task reassignment email not sent for task ${taskId}: ${result.error}`);
+          return {
+            sent: false,
+            reason: "provider_error" as const,
+            error: result.error,
+          };
+        }
+
+        return { sent: true, id: result.messageId ?? null, to: newAssignee.email };
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        console.warn(`Error sending reassignment email for task ${taskId}: ${errorMsg}`);
+        return { sent: false, reason: "provider_error" as const, error: errorMsg };
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`notifyTaskReassigned error: ${errorMsg}`);
+      return { sent: false, reason: "provider_error" as const, error: errorMsg };
+    }
+  });
