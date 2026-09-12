@@ -6,7 +6,6 @@ import type { AppData, AttentionPoint, Perfil, Rol, Task } from "./types";
 import type { Database } from "@/integrations/supabase/types";
 import { notifyTaskAssigned } from "@/lib/notify.functions";
 
-
 type TaskUpdate = Database["public"]["Tables"]["tasks"]["Update"];
 type PointUpdate = Database["public"]["Tables"]["attention_points"]["Update"];
 
@@ -97,12 +96,10 @@ function safeFileName(name: string): string {
 async function uploadAttachments(taskId: string, files: File[], userId: string | null) {
   for (const file of files) {
     const path = `${taskId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName(file.name)}`;
-    const { error: upErr } = await supabase.storage
-      .from(ATTACHMENTS_BUCKET)
-      .upload(path, file, {
-        contentType: file.type || "application/octet-stream",
-        upsert: false,
-      });
+    const { error: upErr } = await supabase.storage.from(ATTACHMENTS_BUCKET).upload(path, file, {
+      contentType: file.type || "application/octet-stream",
+      upsert: false,
+    });
     if (upErr) throw new Error(`No se pudo subir "${file.name}": ${upErr.message}`);
     const { error: rowErr } = await supabase.from("task_attachments").insert({
       task_id: taskId,
@@ -183,14 +180,15 @@ export function useAppStore() {
       setLoadedFor(null);
       return;
     }
-    const [myRolesRes, allRolesRes, profilesRes, tasksRes, pointsRes, attachRes] = await Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase.from("user_roles").select("user_id, role"),
-      supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
-      supabase.from("tasks").select("*").order("fecha_limite"),
-      supabase.from("attention_points").select("*").order("created_at"),
-      supabase.from("task_attachments").select("*").order("created_at"),
-    ]);
+    const [myRolesRes, allRolesRes, profilesRes, tasksRes, pointsRes, attachRes] =
+      await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", userId),
+        supabase.from("user_roles").select("user_id, role"),
+        supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
+        supabase.from("tasks").select("*").order("fecha_limite"),
+        supabase.from("attention_points").select("*").order("created_at"),
+        supabase.from("task_attachments").select("*").order("created_at"),
+      ]);
     setIsAdmin((myRolesRes.data ?? []).some((r) => r.role === "admin"));
     const roleMap = new Map((allRolesRes.data ?? []).map((r) => [r.user_id, r.role as Rol]));
     setProfiles(
@@ -273,10 +271,7 @@ export function useAppStore() {
     [taskRows, attachmentRows, pointRows, semanas, nameOf],
   );
 
-  const perfil = useMemo(
-    () => profiles.find((p) => p.id === userId) ?? null,
-    [profiles, userId],
-  );
+  const perfil = useMemo(() => profiles.find((p) => p.id === userId) ?? null, [profiles, userId]);
 
   const createTask = useCallback(
     async (semana: string, input: TaskInput) => {
@@ -418,7 +413,13 @@ export function useAppStore() {
   const updatePunto = useCallback(
     async (
       id: string,
-      patch: { taskId?: string; tipo?: string; motivo?: string; cliente?: string; colaborador?: string },
+      patch: {
+        taskId?: string;
+        tipo?: string;
+        motivo?: string;
+        cliente?: string;
+        colaborador?: string;
+      },
     ) => {
       const update: PointUpdate = {};
       if (patch.taskId !== undefined) update["task_id"] = patch.taskId;
