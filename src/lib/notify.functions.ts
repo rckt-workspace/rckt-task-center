@@ -34,7 +34,6 @@ export const notifyTaskAssigned = createServerFn({ method: "POST" })
     const author = (people ?? []).find((p) => p.id === userId);
     if (!assignee?.email) return { sent: false, reason: "no_email" as const };
 
-    // Notas de voz adjuntas: enlace firmado (7 días) para escuchar/descargar
     const { data: attachments } = await supabase
       .from("task_attachments")
       .select("name, path, mime")
