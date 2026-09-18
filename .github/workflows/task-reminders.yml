@@ -1,0 +1,22 @@
+name: Daily Task Reminders
+
+on:
+  schedule:
+    # 08:00 America/Bogota (UTC-5, no DST) = 13:00 UTC
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send daily task reminders
+        run: |
+          curl --fail \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.TASK_REMINDER_CRON_SECRET }}" \
+            "${{ secrets.TASK_REMINDER_URL }}"
+        env:
+          TASK_REMINDER_URL: ${{ secrets.TASK_REMINDER_URL }}
+          TASK_REMINDER_CRON_SECRET: ${{ secrets.TASK_REMINDER_CRON_SECRET }}
