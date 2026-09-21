@@ -65,6 +65,27 @@ export type Database = {
           },
         ]
       }
+      clients: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
       comment_reactions: {
         Row: {
           comment_id: string

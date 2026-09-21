@@ -25,6 +25,10 @@ import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
+import { useClients } from "@/lib/rckt/useClients";
+
+/** Valor centinela del desplegable para crear un cliente nuevo. */
+const NUEVO_CLIENTE = "__nuevo_cliente__";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
 import type { TaskInput } from "@/lib/rckt/useAppStore";
@@ -94,6 +98,15 @@ export function TaskDialog({
   onSaveTemplate,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
+  const { clients, addClient } = useClients();
+  const [nuevoCliente, setNuevoCliente] = useState<string | null>(null);
+  const [clienteError, setClienteError] = useState<string | null>(null);
+  const [guardandoCliente, setGuardandoCliente] = useState(false);
+  const clientOptions = useMemo(() => {
+    const set = new Set(clients.filter(Boolean));
+    if (v.cliente) set.add(v.cliente);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [clients, v.cliente]);
   const [error, setError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -435,21 +448,83 @@ export function TaskDialog({
           <div className="space-y-1.5">
             <Label>Cliente</Label>
             <Select
-              value={v.cliente}
-              onValueChange={(x) => setV({ ...v, cliente: x as Cliente })}
+              value={nuevoCliente !== null ? NUEVO_CLIENTE : v.cliente}
+              onValueChange={(x) => {
+                setClienteError(null);
+                if (x === NUEVO_CLIENTE) {
+                  setNuevoCliente("");
+                  return;
+                }
+                setNuevoCliente(null);
+                setV({ ...v, cliente: x as Cliente });
+              }}
               disabled={!canEditAll}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CLIENTES.map((c) => (
+                {clientOptions.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
                 ))}
+                {canEditAll ? (
+                  <SelectItem value={NUEVO_CLIENTE}>+ Agregar nuevo cliente</SelectItem>
+                ) : null}
               </SelectContent>
             </Select>
+            {nuevoCliente !== null ? (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex gap-2">
+                  <Input
+                    value={nuevoCliente}
+                    onChange={(e) => setNuevoCliente(e.target.value)}
+                    placeholder="Nombre del cliente nuevo"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={guardandoCliente || !nuevoCliente.trim()}
+                    onClick={() => {
+                      setGuardandoCliente(true);
+                      setClienteError(null);
+                      addClient(nuevoCliente)
+                        .then((nombre) => {
+                          setV((prev) => ({ ...prev, cliente: nombre as Cliente }));
+                          setNuevoCliente(null);
+                        })
+                        .catch((err: unknown) =>
+                          setClienteError(
+                            err instanceof Error ? err.message : "No se pudo guardar el cliente",
+                          ),
+                        )
+                        .finally(() => setGuardandoCliente(false));
+                    }}
+                  >
+                    Guardar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setNuevoCliente(null);
+                      setClienteError(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+                {clienteError ? (
+                  <p className="text-xs text-destructive">{clienteError}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Queda disponible para futuras tareas.
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">

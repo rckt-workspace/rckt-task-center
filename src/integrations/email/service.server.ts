@@ -62,9 +62,9 @@ export async function sendTaskAssignedEmail(params: {
     area: params.area,
     status: params.status,
     dueDate: params.dueDate,
-    authorName: params.authorName,
-    details: params.details,
-    audioLinks: params.audioLinks,
+    ...(params.authorName === undefined ? {} : { authorName: params.authorName }),
+    ...(params.details === undefined ? {} : { details: params.details }),
+    ...(params.audioLinks === undefined ? {} : { audioLinks: params.audioLinks }),
   });
 
   return sendEmail({
@@ -95,9 +95,9 @@ export async function sendTaskReassignedEmail(params: {
     area: params.area,
     status: params.status,
     dueDate: params.dueDate,
-    previousAssignee: params.previousAssignee,
-    authorName: params.authorName,
-    details: params.details,
+    ...(params.previousAssignee === undefined ? {} : { previousAssignee: params.previousAssignee }),
+    ...(params.authorName === undefined ? {} : { authorName: params.authorName }),
+    ...(params.details === undefined ? {} : { details: params.details }),
   });
 
   return sendEmail({
@@ -126,7 +126,7 @@ export async function sendTaskDueTodayEmail(params: {
     area: params.area,
     status: params.status,
     dueDate: params.dueDate,
-    details: params.details,
+    ...(params.details === undefined ? {} : { details: params.details }),
   });
 
   return sendEmail({

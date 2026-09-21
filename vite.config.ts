@@ -6,7 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const isLovableSandbox = process.env.LOVABLE_SANDBOX === "1" || !!process.env.DEV_SERVER__PROJECT_PATH;
+const isLovableSandbox = process.env['LOVABLE_SANDBOX'] === "1" || !!process.env['DEV_SERVER__PROJECT_PATH'];
 
 export default defineConfig({
   tanstackStart: {
@@ -19,13 +19,12 @@ export default defineConfig({
       {
         name: "override-nitro-preset",
         apply: "build",
-        config(config) {
+        config(config: Record<string, any>) {
           // Outside Lovable Sandbox, force render-com preset for Render deployment
           if (!isLovableSandbox) {
-            if (!config.nitro) {
-              config.nitro = {};
-            }
-            config.nitro.preset = "render-com";
+            const nitro = (config['nitro'] ?? {}) as { preset?: string };
+            nitro.preset = "render-com";
+            config['nitro'] = nitro;
           }
         },
       },

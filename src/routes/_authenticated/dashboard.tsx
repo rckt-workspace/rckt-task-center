@@ -57,6 +57,7 @@ import {
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, todayISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
+import { useClients } from "@/lib/rckt/useClients";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -83,6 +84,12 @@ const ALL = "__all__";
 
 function Dashboard() {
   const store = useAppStore();
+  const { clients } = useClients();
+  const clientOptions = useMemo(() => {
+    const set = new Set<string>([...CLIENTES, ...clients]);
+    for (const t of store.data.tasks) if (t.cliente) set.add(t.cliente);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [clients, store.data.tasks]);
   const navigate = useNavigate();
   const [semana, setSemana] = useState<string>(currentWeekISO());
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -581,7 +588,7 @@ function Dashboard() {
               value={fCliente}
               onChange={setFCliente}
               placeholder="Cliente"
-              options={[...CLIENTES]}
+              options={clientOptions}
             />
             <FilterSelect value={fArea} onChange={setFArea} placeholder="Área" options={[...AREAS]} />
             <FilterSelect
