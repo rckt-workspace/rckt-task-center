@@ -68,7 +68,7 @@ export class GmailProvider implements IEmailProvider {
       return {
         sent: true,
         provider: "gmail",
-        messageId: result.messageId || result.response,
+        messageId: String(result.messageId || result.response || ""),
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error sending email";
