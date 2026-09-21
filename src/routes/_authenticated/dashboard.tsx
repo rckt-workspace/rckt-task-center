@@ -83,6 +83,7 @@ const ALL = "__all__";
 
 function Dashboard() {
   const store = useAppStore();
+  const { clients } = useClients();
   const navigate = useNavigate();
   const [semana, setSemana] = useState<string>(currentWeekISO());
   const [dialogOpen, setDialogOpen] = useState(false);
