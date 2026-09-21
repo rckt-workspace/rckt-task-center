@@ -102,6 +102,11 @@ export function TaskDialog({
   const [nuevoCliente, setNuevoCliente] = useState<string | null>(null);
   const [clienteError, setClienteError] = useState<string | null>(null);
   const [guardandoCliente, setGuardandoCliente] = useState(false);
+  const clientOptions = useMemo(() => {
+    const set = new Set(clients.filter(Boolean));
+    if (v.cliente) set.add(v.cliente);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [clients, v.cliente]);
   const [error, setError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
