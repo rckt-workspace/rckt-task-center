@@ -94,6 +94,10 @@ export function TaskDialog({
   onSaveTemplate,
 }: Props) {
   const [v, setV] = useState<TaskInput>(emptyValues(defaultColaborador));
+  const { clients, addClient } = useClients();
+  const [nuevoCliente, setNuevoCliente] = useState<string | null>(null);
+  const [clienteError, setClienteError] = useState<string | null>(null);
+  const [guardandoCliente, setGuardandoCliente] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [linkDraft, setLinkDraft] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
