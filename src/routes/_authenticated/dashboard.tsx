@@ -57,6 +57,7 @@ import {
 } from "@/lib/rckt/exporters";
 import { currentWeekISO, todayISO, weekLabel } from "@/lib/rckt/dates";
 import { AREAS, CLIENTES, ESTADOS, type AttentionPoint, type Estado, type Task } from "@/lib/rckt/types";
+import { useClients } from "@/lib/rckt/useClients";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
