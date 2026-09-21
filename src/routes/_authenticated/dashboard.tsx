@@ -84,6 +84,11 @@ const ALL = "__all__";
 function Dashboard() {
   const store = useAppStore();
   const { clients } = useClients();
+  const clientOptions = useMemo(() => {
+    const set = new Set<string>([...CLIENTES, ...clients]);
+    for (const t of store.data.tasks) if (t.cliente) set.add(t.cliente);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [clients, store.data.tasks]);
   const navigate = useNavigate();
   const [semana, setSemana] = useState<string>(currentWeekISO());
   const [dialogOpen, setDialogOpen] = useState(false);
