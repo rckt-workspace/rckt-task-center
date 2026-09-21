@@ -25,6 +25,10 @@ import { AudioPlayer, fileIcon, formatSize, isAudio } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import { TaskSteps } from "./TaskSteps";
 import { AREAS, CLIENTES, ESTADOS } from "@/lib/rckt/types";
+import { useClients } from "@/lib/rckt/useClients";
+
+/** Valor centinela del desplegable para crear un cliente nuevo. */
+const NUEVO_CLIENTE = "__nuevo_cliente__";
 import type { Area, Cliente, Colaborador, Estado, Task } from "@/lib/rckt/types";
 import { todayISO } from "@/lib/rckt/dates";
 import type { TaskInput } from "@/lib/rckt/useAppStore";
