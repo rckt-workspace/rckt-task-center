@@ -439,21 +439,83 @@ export function TaskDialog({
           <div className="space-y-1.5">
             <Label>Cliente</Label>
             <Select
-              value={v.cliente}
-              onValueChange={(x) => setV({ ...v, cliente: x as Cliente })}
+              value={nuevoCliente !== null ? NUEVO_CLIENTE : v.cliente}
+              onValueChange={(x) => {
+                setClienteError(null);
+                if (x === NUEVO_CLIENTE) {
+                  setNuevoCliente("");
+                  return;
+                }
+                setNuevoCliente(null);
+                setV({ ...v, cliente: x as Cliente });
+              }}
               disabled={!canEditAll}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CLIENTES.map((c) => (
+                {clientOptions.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
                 ))}
+                {canEditAll ? (
+                  <SelectItem value={NUEVO_CLIENTE}>+ Agregar nuevo cliente</SelectItem>
+                ) : null}
               </SelectContent>
             </Select>
+            {nuevoCliente !== null ? (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex gap-2">
+                  <Input
+                    value={nuevoCliente}
+                    onChange={(e) => setNuevoCliente(e.target.value)}
+                    placeholder="Nombre del cliente nuevo"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={guardandoCliente || !nuevoCliente.trim()}
+                    onClick={() => {
+                      setGuardandoCliente(true);
+                      setClienteError(null);
+                      addClient(nuevoCliente)
+                        .then((nombre) => {
+                          setV((prev) => ({ ...prev, cliente: nombre as Cliente }));
+                          setNuevoCliente(null);
+                        })
+                        .catch((err: unknown) =>
+                          setClienteError(
+                            err instanceof Error ? err.message : "No se pudo guardar el cliente",
+                          ),
+                        )
+                        .finally(() => setGuardandoCliente(false));
+                    }}
+                  >
+                    Guardar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setNuevoCliente(null);
+                      setClienteError(null);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+                {clienteError ? (
+                  <p className="text-xs text-destructive">{clienteError}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Queda disponible para futuras tareas.
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
