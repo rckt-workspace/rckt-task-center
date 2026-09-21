@@ -582,7 +582,7 @@ function Dashboard() {
               value={fCliente}
               onChange={setFCliente}
               placeholder="Cliente"
-              options={[...CLIENTES]}
+              options={clientOptions}
             />
             <FilterSelect value={fArea} onChange={setFArea} placeholder="Área" options={[...AREAS]} />
             <FilterSelect
