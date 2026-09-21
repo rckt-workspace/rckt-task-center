@@ -22,10 +22,9 @@ export default defineConfig({
         config(config: Record<string, any>) {
           // Outside Lovable Sandbox, force render-com preset for Render deployment
           if (!isLovableSandbox) {
-            if (!config.nitro) {
-              config.nitro = {};
-            }
-            config.nitro.preset = "render-com";
+            const nitro = (config['nitro'] ?? {}) as { preset?: string };
+            nitro.preset = "render-com";
+            config['nitro'] = nitro;
           }
         },
       },
