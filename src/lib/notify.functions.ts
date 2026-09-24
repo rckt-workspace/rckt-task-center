@@ -152,7 +152,7 @@ export const notifyTaskReassigned = createServerFn({ method: "POST" })
           area: task.area,
           status: task.estado,
           dueDate: task.fecha_limite,
-          previousAssignee: oldAssignee?.full_name,
+          ...(oldAssignee?.full_name ? { previousAssignee: oldAssignee.full_name } : {}),
           details: task.observaciones,
         });
 
