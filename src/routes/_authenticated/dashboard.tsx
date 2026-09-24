@@ -46,6 +46,7 @@ import { WorkloadWidget } from "@/components/rckt/WorkloadWidget";
 import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
 import { CompletionCelebration } from "@/components/rckt/CompletionCelebration";
+import { ChatAssistant } from "@/components/rckt/ChatAssistant";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
@@ -888,6 +889,8 @@ function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ChatAssistant />
     </div>
   );
 }
