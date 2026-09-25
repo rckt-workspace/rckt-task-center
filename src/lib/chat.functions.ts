@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { createAuthenticatedSupabaseClient } from "@/integrations/supabase/auth-client.server";
 import { processChat } from "@/server/chat/chat.service.server";
 import type { LLMMessage } from "@/server/llm/types";
 
@@ -14,19 +14,25 @@ const chatSchema = z.object({
       }),
     )
     .optional(),
+  accessToken: z.string().min(1),
 });
 
 export const sendChatMessage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => chatSchema.parse(data))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
+  .validator((data: unknown) => chatSchema.parse(data))
+  .handler(async ({ data: { message, conversationHistory, accessToken } }) => {
     try {
+      console.log("[Chat] request received");
+
+      const { client: supabase, userId } = await createAuthenticatedSupabaseClient(accessToken);
+
+      console.log(`[Chat] authenticated user: ${userId}`);
+
       const response = await processChat(supabase, userId, {
-        message: data.message,
-        conversationHistory: (data.conversationHistory as LLMMessage[]) || [],
+        message,
+        conversationHistory: (conversationHistory as LLMMessage[]) || [],
       });
+
+      console.log("[Chat] response sent successfully");
 
       return {
         ok: true,
@@ -34,7 +40,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
-      console.error(`Chat error for user ${userId}: ${errorMsg}`);
+      console.error(`[Chat] Error: ${errorMsg}`);
 
       return {
         ok: false,

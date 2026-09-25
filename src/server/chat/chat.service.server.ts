@@ -24,8 +24,10 @@ export async function processChat(
 ): Promise<ChatResponse> {
   // Build user context with RLS-respecting queries
   const userContext = await buildUserContext(supabase, userId);
+  console.log(`[Chat] visible tasks: ${userContext.tasks.length}`);
 
   // Initialize LLM provider
+  console.log("[Chat] OpenRouter request started");
   const llmProvider = await initializeLLMProvider();
 
   // Build system prompt
@@ -69,9 +71,18 @@ ${tasksContext}`;
   };
 
   // Call LLM
-  const reply = await llmProvider.chat(llmRequest);
+  try {
+    const reply = await llmProvider.chat(llmRequest);
+    console.log("[Chat] OpenRouter response received");
 
-  return {
-    reply,
-  };
+    return {
+      reply,
+    };
+  } catch (error) {
+    console.error("[Chat] OpenRouter failure:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }

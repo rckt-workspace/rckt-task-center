@@ -22,12 +22,19 @@ export class OpenRouterProvider implements ILLMProvider {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error("[OpenRouter] HTTP error:", {
+        status: response.status,
+        statusText: response.statusText,
+      });
       throw new Error(`OpenRouter API error: ${response.status} - ${error}`);
     }
 
     const data = (await response.json()) as LLMResponse;
     const content = data.choices[0]?.message.content;
-    if (!content) throw new Error("No response from OpenRouter");
+    if (!content) {
+      console.error("[OpenRouter] no content in response");
+      throw new Error("No response from OpenRouter");
+    }
     return content;
   }
 }

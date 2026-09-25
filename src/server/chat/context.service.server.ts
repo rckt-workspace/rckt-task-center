@@ -25,7 +25,7 @@ export async function buildUserContext(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<UserContext> {
-  // Get user profile
+  console.log("[ChatContext] loading profile");
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, email, full_name")
@@ -33,29 +33,39 @@ export async function buildUserContext(
     .maybeSingle();
 
   if (profileError || !profile) {
+    console.error("[ChatContext] profile error:", {
+      error: profileError?.message,
+    });
     throw new Error("User profile not found");
   }
 
-  // Check admin role
+  console.log("[ChatContext] checking role");
   const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
     _user_id: userId,
     _role: "admin",
   });
 
   if (roleError) {
+    console.error("[ChatContext] role error:", {
+      error: roleError.message,
+    });
     throw new Error("Failed to check user role");
   }
 
-  // Get tasks visible to user (RLS enforced by Supabase)
+  console.log("[ChatContext] loading tasks");
   const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, tarea, cliente, area, estado, fecha_limite, fecha_entrega, assigned_to, observaciones");
+    .select(
+      "id, tarea, cliente, area, estado, fecha_limite, fecha_entrega, assigned_to, observaciones",
+    );
 
   if (tasksError) {
+    console.error("[ChatContext] tasks error:", {
+      error: tasksError.message,
+    });
     throw new Error("Failed to fetch tasks");
   }
 
-  // For admin users, enrich with assigned person names
   let enrichedTasks = tasks || [];
   if (isAdmin && enrichedTasks.length > 0) {
     const assignedIds = [...new Set(enrichedTasks.map((t) => t.assigned_to))];
@@ -70,6 +80,8 @@ export async function buildUserContext(
       responsible_name: nameMap.get(t.assigned_to),
     }));
   }
+
+  console.log(`[ChatContext] tasks loaded: ${enrichedTasks.length}`);
 
   return {
     userId,
