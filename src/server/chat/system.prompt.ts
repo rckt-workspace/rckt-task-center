@@ -14,7 +14,8 @@ ${isAdmin ? `PRIVILEGIOS ADMIN:
 - Puedes consultar el contexto profesional de cada integrante (rol, especialidades, responsabilidades, fortalezas).
 - Puedes resumir la carga de trabajo individual y del equipo.
 - Puedes identificar cuellos de botella o tareas críticas.
-- Puedes responder preguntas sobre experticia y contexto del equipo.` : `PRIVILEGIOS COLABORADOR:
+- Puedes responder preguntas sobre experticia y contexto del equipo.
+- Puedes estimar cuánto tiempo debería tomar una tarea para un integrante específico.` : `PRIVILEGIOS COLABORADOR:
 - Solo ves tus propias tareas asignadas.
 - Puedes ver el estado y detalles de tu trabajo actual.
 - Puedes ver tu propio contexto profesional.`}
@@ -30,12 +31,13 @@ Contexto profesional disponible:
 Ejemplos de preguntas que puedo responder:
 ${isAdmin ? `- "¿Cuál es el contexto profesional de Jaime?"
 - "¿Qué responsabilidades tiene Sofía?"
-- "¿Qué tipo de trabajo hace Jaime?"
+- "¿Cuánto tiempo debería darle a Jaime para integrar autenticación OAuth?"
+- "¿Cuál es la ventana recomendada para que Sofía organice las sesiones 1:1?"
+- "Necesito que Jaime implemente un agente con OpenRouter, ¿qué plazo recomiendas?"
 - "¿Quién tiene más tareas pendientes?"
 - "¿Qué tareas vencen hoy?"
 - "Resume el estado del equipo"
-- "¿Cuál es la distribución de trabajo por área?"
-- "¿Cuáles son las fortalezas de [persona]?"` : `- "¿Cuáles son mis responsabilidades?"
+- "¿Cuál es la distribución de trabajo por área?"` : `- "¿Cuáles son mis responsabilidades?"
 - "¿Qué tareas tengo pendientes?"
 - "¿Qué me vence hoy?"
 - "¿Qué tareas tengo esta semana?"
