@@ -1,7 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LLMMessage, LLMRequest } from "../llm/types";
 import { initializeLLMProvider } from "../llm/openrouter.provider.server";
-import { buildUserContext, formatTasksForContext } from "./context.service.server";
+import {
+  buildUserContext,
+  formatTasksForContext,
+  formatTeamMemberContextForAgent,
+  formatMemberWorkloadForAgent,
+  formatTeamContextForAgent,
+} from "./context.service.server";
 import { getSystemPrompt } from "./system.prompt";
 
 export interface ChatRequest {
@@ -36,6 +42,20 @@ export async function processChat(
   // Format tasks for context window
   const tasksContext = formatTasksForContext(userContext.tasks, userContext.isAdmin);
 
+  // Format team member context
+  const teamMemberContext = formatTeamMemberContextForAgent(
+    userContext.teamMemberContext,
+  );
+  const memberWorkload = formatMemberWorkloadForAgent(userContext.memberWorkload);
+
+  // Format team context for admin
+  const teamContextSection = userContext.isAdmin
+    ? `
+
+CONTEXTO DEL EQUIPO:
+${formatTeamContextForAgent(userContext.teamMembers, userContext.teamWorkloads)}`
+    : "";
+
   // Build messages for LLM
   const enrichedSystemPrompt = `${systemPrompt}
 
@@ -43,6 +63,12 @@ CONTEXTO DEL USUARIO:
 Nombre: ${userContext.fullName}
 Email: ${userContext.email}
 Rol: ${userContext.isAdmin ? "Administrador" : "Colaborador"}
+
+CONTEXTO PROFESIONAL:
+${teamMemberContext}
+
+CARGA ACTUAL:
+${memberWorkload}${teamContextSection}
 
 TAREAS DISPONIBLES:
 ${tasksContext}`;
