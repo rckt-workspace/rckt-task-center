@@ -387,6 +387,60 @@ export type Database = {
           },
         ]
       }
+      team_member_contexts: {
+        Row: {
+          blocked_dates: string[] | null
+          capacity_hours_per_week: number | null
+          collaboration_notes: string | null
+          created_at: string | null
+          estimation_notes: string | null
+          id: string
+          notes: string | null
+          responsibilities: string[] | null
+          role_summary: string | null
+          role_title: string | null
+          specialties: string[] | null
+          strengths: string[] | null
+          typical_work: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked_dates?: string[] | null
+          capacity_hours_per_week?: number | null
+          collaboration_notes?: string | null
+          created_at?: string | null
+          estimation_notes?: string | null
+          id?: string
+          notes?: string | null
+          responsibilities?: string[] | null
+          role_summary?: string | null
+          role_title?: string | null
+          specialties?: string[] | null
+          strengths?: string[] | null
+          typical_work?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked_dates?: string[] | null
+          capacity_hours_per_week?: number | null
+          collaboration_notes?: string | null
+          created_at?: string | null
+          estimation_notes?: string | null
+          id?: string
+          notes?: string | null
+          responsibilities?: string[] | null
+          role_summary?: string | null
+          role_title?: string | null
+          specialties?: string[] | null
+          strengths?: string[] | null
+          typical_work?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
