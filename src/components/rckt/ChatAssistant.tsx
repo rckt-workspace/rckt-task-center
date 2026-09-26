@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader, MessageCircle, Send, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import type { LLMMessage } from "@/server/llm/types";
+import type { LLMMessage } from "@/lib/chat-core/llm-types";
 import { toast } from "sonner";
 
 interface Message {

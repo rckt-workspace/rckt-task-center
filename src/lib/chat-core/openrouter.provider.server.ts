@@ -1,4 +1,4 @@
-import type { ILLMProvider, LLMRequest, LLMResponse } from "./types";
+import type { ILLMProvider, LLMRequest, LLMResponse } from "./llm-types";
 
 export class OpenRouterProvider implements ILLMProvider {
   private apiKey: string;
