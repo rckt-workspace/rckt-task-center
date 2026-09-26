@@ -17,7 +17,7 @@ export interface EstimationRequest {
   task_area?: string;
   context: TeamMemberContext | null;
   workload: MemberWorkload | null;
-  conversation_history?: LLMMessage[];
+  conversation_history?: LLMMessage[] | undefined;
 }
 
 export async function estimateTaskForMember(

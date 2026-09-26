@@ -15,7 +15,7 @@ import {
 import { getSystemPrompt } from "./system.prompt";
 import { estimateTaskForMember, type EstimationRequest } from "./estimation.service.server";
 import { addBusinessDays, getBogotaToday } from "./business-days.server";
-import type { TeamMemberWithProfile } from "@/types/team-member-context";
+import type { TeamMemberWithProfile } from "./context.service.server";
 
 export interface ChatRequest {
   message: string;
