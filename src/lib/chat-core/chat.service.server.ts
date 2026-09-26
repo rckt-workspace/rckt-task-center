@@ -56,7 +56,7 @@ function extractMemberNameFromMessage(message: string, teamMembers: TeamMemberWi
   const lowerMessage = message.toLowerCase();
 
   for (const member of teamMembers) {
-    const firstName = member.fullName.split(" ")[0].toLowerCase();
+    const firstName = (member.fullName.split(" ")[0] ?? "").toLowerCase();
     const fullNameLower = member.fullName.toLowerCase();
 
     if (lowerMessage.includes(fullNameLower) || lowerMessage.includes(firstName)) {
