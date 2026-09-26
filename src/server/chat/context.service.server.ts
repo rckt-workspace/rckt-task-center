@@ -160,7 +160,10 @@ export async function buildUserContext(
   };
 }
 
-export function formatTasksForContext(tasks: TaskContext[], isAdmin: boolean): string {
+export function formatTasksForContext(
+  tasks: TaskContext[],
+  isAdmin: boolean,
+): string {
   if (tasks.length === 0) {
     return "No hay tareas disponibles.";
   }
