@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { LLMMessage } from "@/lib/chat-core/llm-types";
 import { toast } from "sonner";
+import { sendChatMessage } from "@/lib/chat.functions";
 
 interface Message {
   id: string;
@@ -85,31 +86,16 @@ export function ChatAssistant() {
 
       const conversationHistory = buildConversationHistory();
 
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
-        body: JSON.stringify({
+      const data = await sendChatMessage({
+        data: {
           message: userMessage,
           conversationHistory,
-        }),
+          accessToken: sessionData.session.access_token,
+        },
       });
 
-      if (!response.ok) {
-        const errorData = (await response.json()) as { error?: string };
-        setError(errorData.error || "Error al procesar tu mensaje");
-        return;
-      }
-
-      const data = (await response.json()) as {
-        ok: boolean;
-        reply?: string;
-      };
-
       if (!data.ok || !data.reply) {
-        setError("Error al procesar tu mensaje");
+        setError(("error" in data && data.error) || "Error al procesar tu mensaje");
         return;
       }
 
