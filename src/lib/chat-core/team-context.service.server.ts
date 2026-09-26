@@ -138,7 +138,7 @@ export async function loadMemberWorkload(
     in_progress_task_count: inProgressCount,
     overdue_task_count: overdueCount,
     upcoming_deadlines: deadlines,
-    nearest_deadline: nearestDeadline,
+    nearest_deadline: nearestDeadline ?? null,
     is_blocked: isBlocked,
   };
 

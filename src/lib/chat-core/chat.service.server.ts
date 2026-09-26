@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { LLMMessage, LLMRequest } from "../llm/types";
-import { initializeLLMProvider } from "../llm/openrouter.provider.server";
+import type { LLMMessage, LLMRequest } from "./llm-types";
+import { initializeLLMProvider } from "./openrouter.provider.server";
 import {
   buildUserContext,
   formatTasksForContext,
@@ -15,7 +15,7 @@ import {
 import { getSystemPrompt } from "./system.prompt";
 import { estimateTaskForMember, type EstimationRequest } from "./estimation.service.server";
 import { addBusinessDays, getBogotaToday } from "./business-days.server";
-import type { TeamMemberWithProfile } from "@/types/team-member-context";
+import type { TeamMemberWithProfile } from "./context.service.server";
 
 export interface ChatRequest {
   message: string;
@@ -56,7 +56,7 @@ function extractMemberNameFromMessage(message: string, teamMembers: TeamMemberWi
   const lowerMessage = message.toLowerCase();
 
   for (const member of teamMembers) {
-    const firstName = member.fullName.split(" ")[0].toLowerCase();
+    const firstName = (member.fullName.split(" ")[0] ?? "").toLowerCase();
     const fullNameLower = member.fullName.toLowerCase();
 
     if (lowerMessage.includes(fullNameLower) || lowerMessage.includes(firstName)) {

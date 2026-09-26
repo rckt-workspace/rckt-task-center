@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { LLMMessage } from "../llm/types";
-import { initializeLLMProvider } from "../llm/openrouter.provider.server";
+import type { LLMMessage } from "./llm-types";
+import { initializeLLMProvider } from "./openrouter.provider.server";
 import {
   EstimationResultSchema,
   type EstimationResult,
@@ -17,7 +17,7 @@ export interface EstimationRequest {
   task_area?: string;
   context: TeamMemberContext | null;
   workload: MemberWorkload | null;
-  conversation_history?: LLMMessage[];
+  conversation_history?: LLMMessage[] | undefined;
 }
 
 export async function estimateTaskForMember(

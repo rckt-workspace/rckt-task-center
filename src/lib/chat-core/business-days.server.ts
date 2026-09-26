@@ -25,7 +25,7 @@ export function getBogotaToday(): string {
 export function addBusinessDays(startDate: string, businessDays: number): string {
   // Parse date explicitly to avoid UTC interpretation
   const [year, month, day] = startDate.split("-").map(Number);
-  const date = new Date(year, month - 1, day, 12, 0, 0);
+  const date = new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1, 12, 0, 0);
 
   let daysAdded = 0;
 

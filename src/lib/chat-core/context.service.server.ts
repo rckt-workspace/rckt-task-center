@@ -2,9 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   loadTeamMemberContext,
   loadMemberWorkload,
-  type TeamMemberContext,
-  type MemberWorkload,
+  loadAllTeamContexts,
 } from "./team-context.service.server";
+import type { TeamMemberContext, MemberWorkload } from "@/types/team-member-context";
 
 export interface TaskContext {
   id: string;
