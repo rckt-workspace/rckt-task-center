@@ -42,6 +42,12 @@ export interface Perfil {
   nombre: string;
   email: string;
   cargo: string;
+  avatarPath?: string | null;
+  bio?: string;
+  isActive?: boolean;
+  mustChangePassword?: boolean;
+  passwordUpdatedAt?: string | null;
+  lastLoginAt?: string | null;
   role?: Rol;
 }
 

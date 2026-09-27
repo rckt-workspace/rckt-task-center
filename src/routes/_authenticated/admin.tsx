@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, LayoutTemplate, Pencil, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, Key, LayoutTemplate, Pencil, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ import { useAppStore } from "@/lib/rckt/useAppStore";
 import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { AREAS } from "@/lib/rckt/types";
 import { createTeamUser, deleteTeamUser, updateUserCargo } from "@/lib/admin.functions";
+import { resetTeamUserPassword } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -76,6 +77,14 @@ function AdminPage() {
   const [editCargo, setEditCargo] = useState<string>(AREAS[0]);
   const [editCargoOtro, setEditCargoOtro] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+
+  const [resetingPassword, setResetingPassword] = useState<{ id: string; nombre: string } | null>(
+    null,
+  );
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetPasswordConfirm, setResetPasswordConfirm] = useState("");
+  const [savingReset, setSavingReset] = useState(false);
+  const resetPasswordFn = useServerFn(resetTeamUserPassword);
 
   const OTRO = "__otro__";
 
@@ -145,6 +154,32 @@ function AdminPage() {
       toast.error(err instanceof Error ? err.message : "No se pudo actualizar el cargo");
     }
     setSavingEdit(false);
+  };
+
+  const submitReset = async () => {
+    if (!resetingPassword) return;
+    if (resetPassword !== resetPasswordConfirm) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    if (resetPassword.length < 8) {
+      toast.error("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+    setSavingReset(true);
+    try {
+      await resetPasswordFn({
+        data: { userId: resetingPassword.id, temporaryPassword: resetPassword },
+      });
+      toast.success("Contraseña temporal actualizada. El usuario deberá cambiarla al iniciar sesión.");
+      setResetingPassword(null);
+      setResetPassword("");
+      setResetPasswordConfirm("");
+      await store.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo restablecer la contraseña");
+    }
+    setSavingReset(false);
   };
 
   return (
@@ -266,7 +301,14 @@ function AdminPage() {
             <TableBody>
               {store.profiles.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.nombre}</TableCell>
+                  <TableCell className="font-medium">
+                    <button
+                      onClick={() => navigate({ to: `/team/${p.id}` })}
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {p.nombre}
+                    </button>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{p.email}</TableCell>
                   <TableCell className="text-muted-foreground">{p.cargo || "—"}</TableCell>
                   <TableCell className="text-right">
@@ -277,6 +319,14 @@ function AdminPage() {
                       onClick={() => openEdit(p)}
                     >
                       <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Restablecer contraseña"
+                      onClick={() => setResetingPassword({ id: p.id, nombre: p.nombre })}
+                    >
+                      <Key className="size-4" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -415,6 +465,49 @@ function AdminPage() {
             </Button>
             <Button onClick={() => void submitEdit()} disabled={savingEdit}>
               {savingEdit ? "Guardando…" : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resetingPassword !== null} onOpenChange={(open) => !open && setResetingPassword(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Restablecer contraseña</DialogTitle>
+            <DialogDescription>
+              Establece una contraseña temporal para {resetingPassword?.nombre}. El usuario deberá cambiarla al iniciar sesión.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-password">Contraseña temporal</Label>
+              <Input
+                id="reset-password"
+                type="password"
+                placeholder="Mínimo 8 caracteres"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                disabled={savingReset}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-password-confirm">Confirmar contraseña</Label>
+              <Input
+                id="reset-password-confirm"
+                type="password"
+                placeholder="Confirma la contraseña"
+                value={resetPasswordConfirm}
+                onChange={(e) => setResetPasswordConfirm(e.target.value)}
+                disabled={savingReset}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetingPassword(null)} disabled={savingReset}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void submitReset()} disabled={savingReset || !resetPassword || !resetPasswordConfirm}>
+              {savingReset ? "Guardando…" : "Restablecer"}
             </Button>
           </DialogFooter>
         </DialogContent>

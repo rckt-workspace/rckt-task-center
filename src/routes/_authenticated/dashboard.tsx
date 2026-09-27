@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Briefcase,
   CalendarClock,
   FileDown,
   FileSpreadsheet,
@@ -47,7 +48,10 @@ import { AttentionPoints } from "@/components/rckt/AttentionPoints";
 import { AttentionDialog, type AttentionInput } from "@/components/rckt/AttentionDialog";
 import { CompletionCelebration } from "@/components/rckt/CompletionCelebration";
 import { ChatAssistant } from "@/components/rckt/ChatAssistant";
+import { PersonAvatar } from "@/components/rckt/PersonAvatar";
+import { PasswordChangeAlert } from "@/components/rckt/PasswordChangeAlert";
 import { supabase } from "@/integrations/supabase/client";
+import { getAvatarUrl } from "@/lib/profile.functions";
 
 import { useAppStore, semanaDeFechaLimite, type TaskInput } from "@/lib/rckt/useAppStore";
 import {
@@ -86,12 +90,25 @@ const ALL = "__all__";
 function Dashboard() {
   const store = useAppStore();
   const { clients } = useClients();
+  const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  // Load avatar URL
+  useEffect(() => {
+    if (store.session?.user.id) {
+      getAvatarUrl({ userId: store.session.user.id })
+        .then((result) => {
+          if (result.url) setAvatarUrl(result.url);
+        })
+        .catch(() => setAvatarUrl(null));
+    }
+  }, [store.session?.user.id]);
+
   const clientOptions = useMemo(() => {
     const set = new Set<string>([...CLIENTES, ...clients]);
     for (const t of store.data.tasks) if (t.cliente) set.add(t.cliente);
     return [...set].sort((a, b) => a.localeCompare(b, "es"));
   }, [clients, store.data.tasks]);
-  const navigate = useNavigate();
   const [semana, setSemana] = useState<string>(currentWeekISO());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
@@ -318,12 +335,41 @@ function Dashboard() {
               Centro de Control Semanal
             </h1>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-medium">{nombre}</p>
-            <p className="text-xs text-header-foreground/70">
-              {isCoord ? "Administradora" : "Colaborador"}
-            </p>
-          </div>
+          <button
+            onClick={() => navigate({ to: "/profile" })}
+            className="flex items-center gap-2 p-1 rounded hover:bg-header-foreground/10 transition"
+            title="Ver perfil"
+          >
+            <PersonAvatar name={nombre} imageUrl={avatarUrl} size="sm" />
+            <div className="text-right">
+              <p className="text-sm font-medium">{nombre}</p>
+              <p className="text-xs text-header-foreground/70">
+                {isCoord ? "Administrador" : "Colaborador"}
+              </p>
+            </div>
+          </button>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="gap-2 border-header-foreground/30 bg-transparent text-header-foreground hover:bg-header-foreground/15 hover:text-header-foreground"
+          >
+            <Link to="/team">
+              <Users className="size-3.5" />
+              Equipo
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="gap-2 border-header-foreground/30 bg-transparent text-header-foreground hover:bg-header-foreground/15 hover:text-header-foreground"
+          >
+            <Link to="/projects">
+              <Briefcase className="size-3.5" />
+              Proyectos
+            </Link>
+          </Button>
           {isCoord ? (
             <Button
               variant="outline"
@@ -351,6 +397,7 @@ function Dashboard() {
 
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
+        <PasswordChangeAlert mustChange={store.perfil?.mustChangePassword} />
         <section className="flex flex-wrap items-center gap-3">
           <div
             role="group"

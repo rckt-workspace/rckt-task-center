@@ -31,14 +31,31 @@ function colorFor(name: string): string {
 
 interface Props {
   name: string;
+  imageUrl?: string;
   size?: "xs" | "sm" | "md";
   className?: string;
 }
 
-/** Avatar circular con iniciales y color estable por persona. */
-export function PersonAvatar({ name, size = "sm", className }: Props) {
+/** Avatar circular con imagen o iniciales y color estable por persona. */
+export function PersonAvatar({ name, imageUrl, size = "sm", className }: Props) {
   const sizeClass =
     size === "xs" ? "size-5 text-[9px]" : size === "md" ? "size-9 text-xs" : "size-7 text-[10px]";
+
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name}
+        title={name}
+        className={cn(
+          "inline-flex shrink-0 rounded-full object-cover",
+          sizeClass,
+          className,
+        )}
+      />
+    );
+  }
+
   return (
     <span
       aria-hidden

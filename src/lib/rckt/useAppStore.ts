@@ -184,7 +184,7 @@ export function useAppStore() {
       await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId),
         supabase.from("user_roles").select("user_id, role"),
-        supabase.from("profiles").select("id, full_name, email, cargo").order("full_name"),
+        supabase.from("profiles").select("id, full_name, email, cargo, avatar_path, bio, is_active, must_change_password, password_updated_at, last_login_at").order("full_name"),
         supabase.from("tasks").select("*").order("fecha_limite"),
         supabase.from("attention_points").select("*").order("created_at"),
         supabase.from("task_attachments").select("*").order("created_at"),
@@ -199,6 +199,12 @@ export function useAppStore() {
           nombre: p.full_name || p.email,
           email: p.email,
           cargo: p.cargo,
+          avatarPath: p.avatar_path,
+          bio: p.bio,
+          isActive: p.is_active,
+          mustChangePassword: p.must_change_password,
+          passwordUpdatedAt: p.password_updated_at,
+          lastLoginAt: p.last_login_at,
           ...(role ? { role } : {}),
         };
       }),
