@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Camera, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,11 @@ interface TeamMemberContext {
 function ProfilePage() {
   const navigate = useNavigate();
   const store = useAppStore();
+  const updateProfileFn = useServerFn(updateProfile);
+  const changePasswordFn = useServerFn(changePassword);
+  const getAvatarUrlFn = useServerFn(getAvatarUrl);
+  const deleteOldAvatarFn = useServerFn(deleteOldAvatar);
+
   const [teamContext, setTeamContext] = useState<TeamMemberContext | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -70,13 +76,13 @@ function ProfilePage() {
   // Load avatar URL
   useEffect(() => {
     if (userId) {
-      getAvatarUrl({ userId })
+      getAvatarUrlFn({ data: { userId } })
         .then((result) => {
           if (result.url) setAvatarUrl(result.url);
         })
         .catch(() => setAvatarUrl(null));
     }
-  }, [userId]);
+  }, [userId, getAvatarUrlFn]);
 
   // Load team context
   useEffect(() => {
@@ -169,7 +175,7 @@ function ProfilePage() {
 
       // Delete old avatar if exists
       if (perfil.avatarPath) {
-        await deleteOldAvatar({ path: perfil.avatarPath }).catch(() => {
+        await deleteOldAvatarFn({ data: { path: perfil.avatarPath } }).catch(() => {
           // Non-critical error
         });
       }
@@ -197,9 +203,11 @@ function ProfilePage() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      await updateProfile({
-        fullName,
-        bio,
+      await updateProfileFn({
+        data: {
+          fullName,
+          bio,
+        },
       });
       toast.success("Perfil actualizado correctamente");
       await store.refresh();
@@ -228,10 +236,12 @@ function ProfilePage() {
 
     setIsChangingPassword(true);
     try {
-      await changePassword({
-        currentPassword,
-        newPassword,
-        confirmPassword,
+      await changePasswordFn({
+        data: {
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        },
       });
       toast.success("Contraseña actualizada correctamente");
       setCurrentPassword("");

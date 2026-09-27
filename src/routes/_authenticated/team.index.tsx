@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,6 +34,7 @@ interface TeamMember {
 }
 
 function TeamDirectoryPage() {
+  const getAvatarUrlFn = useServerFn(getAvatarUrl);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ function TeamDirectoryPage() {
         for (const member of data as TeamMember[]) {
           if (member.avatar_path) {
             try {
-              const result = await getAvatarUrl({ userId: member.user_id });
+              const result = await getAvatarUrlFn({ data: { userId: member.user_id } });
               if (result.url) {
                 urls[member.user_id] = result.url;
               }
@@ -82,7 +84,7 @@ function TeamDirectoryPage() {
     };
 
     loadTeamDirectory();
-  }, []);
+  }, [getAvatarUrlFn]);
 
   if (loading) {
     return (

@@ -48,21 +48,48 @@ export const changePassword = createServerFn({ method: "POST" })
       throw new Error("Las nuevas contraseñas no coinciden");
     }
 
-    // Get the user's email from profiles to verify password
+    // Get the user's email from profiles (user can read own profile by RLS)
     const { data: profileData, error: profileError } = await context.supabase
       .from("profiles")
       .select("email")
       .eq("id", context.userId)
       .single();
 
-    if (profileError || !profileData) {
-      throw new Error("No se pudo obtener el perfil del usuario");
+    if (profileError || !profileData?.email) {
+      throw new Error("No se pudo obtener el email del usuario");
     }
 
-    // Import supabaseAdmin for password reset
+    const userEmail = profileData.email;
+
+    // Verify current password by attempting to sign in
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabasePublicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabasePublicKey) {
+      throw new Error("Configuración de Supabase incompleta");
+    }
+
+    const verifyClient = createClient(supabaseUrl, supabasePublicKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+
+    const { error: signInError } = await verifyClient.auth.signInWithPassword({
+      email: userEmail,
+      password: data.currentPassword,
+    });
+
+    if (signInError) {
+      throw new Error("La contraseña actual es incorrecta");
+    }
+
+    // Only after verification: update password using supabaseAdmin
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Update the password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       context.userId,
       { password: data.newPassword },
@@ -123,19 +150,19 @@ export const getAvatarUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: profileData, error: profileError } = await context.supabase
-      .from("profiles")
-      .select("avatar_path")
-      .eq("id", data.userId)
-      .single();
+    // Query using RPC to securely get avatar path of active team members
+    const { data: avatarPath, error: rpcError } = await context.supabase.rpc(
+      "get_team_member_avatar",
+      { _user_id: data.userId }
+    );
 
-    if (profileError || !profileData?.avatar_path) {
+    if (rpcError || !avatarPath) {
       return { url: null };
     }
 
     const { data: signedUrl, error } = await context.supabase.storage
       .from(AVATAR_BUCKET)
-      .createSignedUrl(profileData.avatar_path, 60 * 60); // 1 hour
+      .createSignedUrl(avatarPath, 60 * 60); // 1 hour
 
     if (error || !signedUrl) {
       return { url: null };

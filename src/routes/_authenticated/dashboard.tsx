@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
   Briefcase,
@@ -91,18 +92,19 @@ function Dashboard() {
   const store = useAppStore();
   const { clients } = useClients();
   const navigate = useNavigate();
+  const getAvatarUrlFn = useServerFn(getAvatarUrl);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Load avatar URL
   useEffect(() => {
     if (store.session?.user.id) {
-      getAvatarUrl({ userId: store.session.user.id })
+      getAvatarUrlFn({ data: { userId: store.session.user.id } })
         .then((result) => {
           if (result.url) setAvatarUrl(result.url);
         })
         .catch(() => setAvatarUrl(null));
     }
-  }, [store.session?.user.id]);
+  }, [store.session?.user.id, getAvatarUrlFn]);
 
   const clientOptions = useMemo(() => {
     const set = new Set<string>([...CLIENTES, ...clients]);

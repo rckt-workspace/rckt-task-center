@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Loader2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -45,6 +46,7 @@ interface TaskProgress {
 function TeamProfilePage() {
   const { userId } = Route.useParams();
   const navigate = useNavigate();
+  const getAvatarUrlFn = useServerFn(getAvatarUrl);
   const [profile, setProfile] = useState<TeamProfile | null>(null);
   const [teamContext, setTeamContext] = useState<TeamContext | null>(null);
   const [currentTasks, setCurrentTasks] = useState<TaskProgress[]>([]);
@@ -107,7 +109,7 @@ function TeamProfilePage() {
 
         // Load avatar URL
         if (userProfile.avatar_path) {
-          const result = await getAvatarUrl({ userId });
+          const result = await getAvatarUrlFn({ data: { userId } });
           if (result.url) {
             setAvatarUrl(result.url);
           }
@@ -120,7 +122,7 @@ function TeamProfilePage() {
     };
 
     loadProfile();
-  }, [userId]);
+  }, [userId, getAvatarUrlFn]);
 
   // Load current tasks for this user
   useEffect(() => {
