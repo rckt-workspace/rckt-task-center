@@ -53,7 +53,7 @@ function ProjectsPage() {
         setLoading(true);
         setError(null);
 
-        const { data, error: rpcError } = await supabase.rpc("get_team_task_progress");
+        const { data, error: rpcError } = await (supabase.rpc as any)("get_team_task_progress");
 
         if (rpcError) {
           throw new Error(

@@ -61,7 +61,7 @@ function TeamProfilePage() {
         setError(null);
 
         // Load team directory using secure RPC
-        const { data: directoryData, error: dirError } = await supabase.rpc(
+        const { data: directoryData, error: dirError } = await (supabase.rpc as any)(
           "get_team_directory"
         );
 
@@ -128,7 +128,7 @@ function TeamProfilePage() {
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const { data, error: tasksError } = await supabase.rpc("get_team_task_progress");
+        const { data, error: tasksError } = await (supabase.rpc as any)("get_team_task_progress");
         if (tasksError) throw tasksError;
 
         if (data) {
@@ -184,7 +184,7 @@ function TeamProfilePage() {
         {/* Profile Header */}
         <Card className="mb-6 p-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
-            <PersonAvatar name={profile.fullName} imageUrl={avatarUrl} size="md" className="size-24" />
+            <PersonAvatar name={profile.fullName} imageUrl={avatarUrl ?? ""} size="md" className="size-24" />
 
             <div className="flex-1 text-center sm:text-left">
               <h2 className="text-2xl font-bold text-gray-900">{profile.fullName}</h2>

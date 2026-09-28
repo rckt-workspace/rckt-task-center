@@ -342,7 +342,7 @@ function Dashboard() {
             className="flex items-center gap-2 p-1 rounded hover:bg-header-foreground/10 transition"
             title="Ver perfil"
           >
-            <PersonAvatar name={nombre} imageUrl={avatarUrl} size="sm" />
+            <PersonAvatar name={nombre} imageUrl={avatarUrl ?? ""} size="sm" />
             <div className="text-right">
               <p className="text-sm font-medium">{nombre}</p>
               <p className="text-xs text-header-foreground/70">
@@ -399,7 +399,7 @@ function Dashboard() {
 
 
       <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-6">
-        <PasswordChangeAlert mustChange={store.perfil?.mustChangePassword} />
+        <PasswordChangeAlert mustChange={Boolean(store.perfil?.mustChangePassword)} />
         <section className="flex flex-wrap items-center gap-3">
           <div
             role="group"

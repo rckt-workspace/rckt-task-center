@@ -47,7 +47,7 @@ function TeamDirectoryPage() {
         setError(null);
 
         // Call the RPC function
-        const { data, error: rpcError } = await supabase.rpc("get_team_directory");
+        const { data, error: rpcError } = await (supabase.rpc as any)("get_team_directory");
 
         if (rpcError) {
           throw new Error(rpcError.message);
@@ -121,7 +121,7 @@ function TeamDirectoryPage() {
                 <div className="flex justify-center mb-4">
                   <PersonAvatar
                     name={member.full_name}
-                    imageUrl={avatarUrls[member.user_id]}
+                    imageUrl={avatarUrls[member.user_id] ?? ""}
                     size="md"
                     className="size-16"
                   />
@@ -155,7 +155,7 @@ function TeamDirectoryPage() {
               )}
 
               <Button asChild className="w-full" variant="outline">
-                <Link to="/team/$userId" params={{ userId: member.user_id }}>Ver perfil</Link>
+                <Link to={`/team/${member.user_id}` as any}>Ver perfil</Link>
               </Button>
             </Card>
           ))}

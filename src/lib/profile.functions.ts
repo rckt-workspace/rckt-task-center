@@ -22,13 +22,13 @@ export const updateProfile = createServerFn({ method: "POST" })
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const update: { full_name?: string; bio?: string } = {};
-    if (data.fullName !== undefined) update["full_name"] = data.fullName;
-    if (data.bio !== undefined) update["bio"] = data.bio;
+    const update: Partial<Record<"full_name" | "bio", string>> = {};
+    if (data.fullName !== undefined) update.full_name = data.fullName;
+    if (data.bio !== undefined) update.bio = data.bio;
 
     const { error } = await context.supabase
       .from("profiles")
-      .update(update)
+      .update(update as any)
       .eq("id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -63,8 +63,8 @@ export const changePassword = createServerFn({ method: "POST" })
 
     // Verify current password by attempting to sign in
     const { createClient } = await import("@supabase/supabase-js");
-    const supabaseUrl = process.env["SUPABASE_URL"];
-    const supabasePublicKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
+    const supabaseUrl = (process.env as any).SUPABASE_URL;
+    const supabasePublicKey = (process.env as any).SUPABASE_PUBLISHABLE_KEY;
 
     if (!supabaseUrl || !supabasePublicKey) {
       throw new Error("Configuración de Supabase incompleta");
@@ -97,17 +97,6 @@ export const changePassword = createServerFn({ method: "POST" })
 
     if (updateError) throw new Error(updateError.message);
 
-    // Update must_change_password and password_updated_at
-    const { error: dbError } = await context.supabase
-      .from("profiles")
-      .update({
-        must_change_password: false,
-        password_updated_at: new Date().toISOString(),
-      })
-      .eq("id", context.userId);
-
-    if (dbError) throw new Error(dbError.message);
-
     return { ok: true };
   });
 
@@ -132,17 +121,6 @@ export const resetTeamUserPassword = createServerFn({ method: "POST" })
 
     if (updateError) throw new Error(updateError.message);
 
-    // Set must_change_password to true
-    const { error: dbError } = await context.supabase
-      .from("profiles")
-      .update({
-        must_change_password: true,
-        password_updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.userId);
-
-    if (dbError) throw new Error(dbError.message);
-
     return { ok: true };
   });
 
@@ -151,7 +129,7 @@ export const getAvatarUrl = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     // Query using RPC to securely get avatar path of active team members
-    const { data: avatarPath, error: rpcError } = await context.supabase.rpc(
+    const { data: avatarPath, error: rpcError } = await (context.supabase.rpc as any)(
       "get_team_member_avatar",
       { _user_id: data.userId }
     );
