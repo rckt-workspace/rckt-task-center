@@ -8,6 +8,34 @@
       "when": 1790009211628,
       "tag": "0000_create_clients",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790633152406,
+      "tag": "0001_add_profile_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790633176211,
+      "tag": "0002_profile_avatars_storage_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790633182988,
+      "tag": "0003_team_projects_multi_assignee",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790633221222,
+      "tag": "0004_fix_task_access_and_restore_policies",
+      "breakpoints": true
     }
   ]
 }

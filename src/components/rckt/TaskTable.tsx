@@ -40,10 +40,10 @@ export function TaskTable({ tasks, showColaborador = false, showSemana = false, 
   return (
     <>
       {/* Desktop */}
-      <div className="hidden overflow-hidden rounded-lg border border-border bg-card shadow-panel lg:block">
+      <div className="hidden max-h-[70vh] overflow-y-auto overflow-x-auto rounded-lg border border-border bg-card shadow-panel lg:block [&>div]:overflow-visible">
         <Table>
           <TableHeader>
-            <TableRow className="bg-secondary/70 hover:bg-secondary/70">
+            <TableRow className="sticky top-0 z-10 bg-secondary shadow-[0_1px_0_0_hsl(var(--border))]">
               <TableHead className="w-[120px]">Estado</TableHead>
               {showSemana ? <TableHead>Semana</TableHead> : null}
               {showColaborador ? <TableHead>Colaborador</TableHead> : null}
