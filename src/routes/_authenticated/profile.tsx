@@ -106,7 +106,7 @@ function ProfilePage() {
           specialties: data.specialties || [],
           responsibilities: data.responsibilities || [],
           strengths: data.strengths || [],
-          typicalWork: data.typical_work || "",
+          typicalWork: Array.isArray(data.typical_work) ? data.typical_work.join(" ") : data.typical_work || "",
           capacityHoursPerWeek: data.capacity_hours_per_week || 0,
         });
       }

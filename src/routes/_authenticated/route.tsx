@@ -7,15 +7,15 @@ function isTransientAuthError(error: unknown): boolean {
   const err = error as Record<string, unknown>;
 
   // Retryable fetch errors
-  if (err.name === "AuthRetryableFetchError") return true;
+  if (err["name"] === "AuthRetryableFetchError") return true;
 
   // Network/HTTP status errors
-  const status = err.status as number | undefined;
+  const status = err["status"] as number | undefined;
   if (status === 0) return true; // Network error
   if (status && status >= 500) return true; // Server error
 
   // Error message patterns
-  const message = (err.message as string)?.toLowerCase() ?? "";
+  const message = (err["message"] as string)?.toLowerCase() ?? "";
   if (
     message.includes("failed to fetch") ||
     message.includes("network") ||

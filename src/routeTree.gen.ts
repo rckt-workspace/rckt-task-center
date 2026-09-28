@@ -14,6 +14,11 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedTeamIndexRouteImport } from './routes/_authenticated/team.index'
+import { Route as AuthenticatedTeamUserIdRouteImport } from './routes/_authenticated/team.$userId'
 import { Route as ApiPublicHooksTaskRemindersRouteImport } from './routes/api/public/hooks/task-reminders'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +45,31 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamIndexRoute = AuthenticatedTeamIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedTeamRoute,
+} as any)
+const AuthenticatedTeamUserIdRoute = AuthenticatedTeamUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => AuthenticatedTeamRoute,
+} as any)
 const ApiPublicHooksTaskRemindersRoute =
   ApiPublicHooksTaskRemindersRouteImport.update({
     id: '/api/public/hooks/task-reminders',
@@ -52,6 +82,11 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/team': typeof AuthenticatedTeamRouteWithChildren
+  '/team/$userId': typeof AuthenticatedTeamUserIdRoute
+  '/team/': typeof AuthenticatedTeamIndexRoute
   '/api/public/hooks/task-reminders': typeof ApiPublicHooksTaskRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +94,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/team/$userId': typeof AuthenticatedTeamUserIdRoute
+  '/team': typeof AuthenticatedTeamIndexRoute
   '/api/public/hooks/task-reminders': typeof ApiPublicHooksTaskRemindersRoute
 }
 export interface FileRoutesById {
@@ -68,15 +107,37 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_authenticated/team': typeof AuthenticatedTeamRouteWithChildren
+  '/_authenticated/team/$userId': typeof AuthenticatedTeamUserIdRoute
+  '/_authenticated/team/': typeof AuthenticatedTeamIndexRoute
   '/api/public/hooks/task-reminders': typeof ApiPublicHooksTaskRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/admin' | '/dashboard' | '/api/public/hooks/task-reminders'
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/dashboard'
+    | '/profile'
+    | '/projects'
+    | '/team'
+    | '/team/$userId'
+    | '/team/'
+    | '/api/public/hooks/task-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/auth' | '/admin' | '/dashboard' | '/api/public/hooks/task-reminders'
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/dashboard'
+    | '/profile'
+    | '/projects'
+    | '/team/$userId'
+    | '/team'
+    | '/api/public/hooks/task-reminders'
   id:
     | '__root__'
     | '/'
@@ -84,6 +145,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/profile'
+    | '/_authenticated/projects'
+    | '/_authenticated/team'
+    | '/_authenticated/team/$userId'
+    | '/_authenticated/team/'
     | '/api/public/hooks/task-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +197,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team': {
+      id: '/_authenticated/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/team/': {
+      id: '/_authenticated/team/'
+      path: '/'
+      fullPath: '/team/'
+      preLoaderRoute: typeof AuthenticatedTeamIndexRouteImport
+      parentRoute: typeof AuthenticatedTeamRoute
+    }
+    '/_authenticated/team/$userId': {
+      id: '/_authenticated/team/$userId'
+      path: '/$userId'
+      fullPath: '/team/$userId'
+      preLoaderRoute: typeof AuthenticatedTeamUserIdRouteImport
+      parentRoute: typeof AuthenticatedTeamRoute
+    }
     '/api/public/hooks/task-reminders': {
       id: '/api/public/hooks/task-reminders'
       path: '/api/public/hooks/task-reminders'
@@ -141,14 +242,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedTeamRouteChildren {
+  AuthenticatedTeamUserIdRoute: typeof AuthenticatedTeamUserIdRoute
+  AuthenticatedTeamIndexRoute: typeof AuthenticatedTeamIndexRoute
+}
+
+const AuthenticatedTeamRouteChildren: AuthenticatedTeamRouteChildren = {
+  AuthenticatedTeamUserIdRoute: AuthenticatedTeamUserIdRoute,
+  AuthenticatedTeamIndexRoute: AuthenticatedTeamIndexRoute,
+}
+
+const AuthenticatedTeamRouteWithChildren =
+  AuthenticatedTeamRoute._addFileChildren(AuthenticatedTeamRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedTeamRoute: typeof AuthenticatedTeamRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedTeamRoute: AuthenticatedTeamRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

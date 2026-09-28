@@ -22,9 +22,9 @@ export const updateProfile = createServerFn({ method: "POST" })
     }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const update: Record<string, any> = {};
-    if (data.fullName !== undefined) update.full_name = data.fullName;
-    if (data.bio !== undefined) update.bio = data.bio;
+    const update: { full_name?: string; bio?: string } = {};
+    if (data.fullName !== undefined) update["full_name"] = data.fullName;
+    if (data.bio !== undefined) update["bio"] = data.bio;
 
     const { error } = await context.supabase
       .from("profiles")
@@ -63,8 +63,8 @@ export const changePassword = createServerFn({ method: "POST" })
 
     // Verify current password by attempting to sign in
     const { createClient } = await import("@supabase/supabase-js");
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabasePublicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+    const supabaseUrl = process.env["SUPABASE_URL"];
+    const supabasePublicKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
 
     if (!supabaseUrl || !supabasePublicKey) {
       throw new Error("Configuración de Supabase incompleta");

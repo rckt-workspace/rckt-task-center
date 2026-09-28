@@ -3,7 +3,7 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PasswordChangeAlertProps {
-  mustChange?: boolean;
+  mustChange?: boolean | undefined;
 }
 
 export function PasswordChangeAlert({ mustChange = false }: PasswordChangeAlertProps) {
