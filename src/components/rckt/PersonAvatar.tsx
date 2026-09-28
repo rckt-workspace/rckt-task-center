@@ -31,7 +31,7 @@ function colorFor(name: string): string {
 
 interface Props {
   name: string;
-  imageUrl?: string | undefined;
+  imageUrl?: string | null;
   size?: "xs" | "sm" | "md";
   className?: string;
 }
