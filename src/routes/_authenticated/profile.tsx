@@ -106,7 +106,7 @@ function ProfilePage() {
           specialties: data.specialties || [],
           responsibilities: data.responsibilities || [],
           strengths: data.strengths || [],
-          typicalWork: data.typical_work || "",
+          typicalWork: (data.typical_work as unknown as string) || "",
           capacityHoursPerWeek: data.capacity_hours_per_week || 0,
         });
       }
@@ -168,7 +168,7 @@ function ProfilePage() {
       // Update profile with new avatar path
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_path: path })
+        .update({ avatar_path: path } as any)
         .eq("id", userId);
 
       if (updateError) throw updateError;
@@ -285,7 +285,7 @@ function ProfilePage() {
         <Card className="mb-6 p-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="relative">
-              <PersonAvatar name={fullName} imageUrl={avatarPreview || avatarUrl} size="md" className="size-24" />
+              <PersonAvatar name={fullName} imageUrl={avatarPreview || avatarUrl || ""} size="md" className="size-24" />
               <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-700 transition">
                 <Camera className="size-4" />
                 <input

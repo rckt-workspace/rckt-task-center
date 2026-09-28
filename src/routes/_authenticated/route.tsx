@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 function isTransientAuthError(error: unknown): boolean {
   if (!error) return false;
 
-  const err = error as Record<string, unknown>;
+  const err = error as any;
 
   // Retryable fetch errors
   if (err.name === "AuthRetryableFetchError") return true;
@@ -162,7 +162,7 @@ export const Route = createFileRoute("/_authenticated")({
         } else {
           console.error("Error fetching profile:", profileError);
         }
-      } else if (profile && !profile.is_active) {
+      } else if (profile && !(profile as any).is_active) {
         // User is inactive: sign out and redirect
         await supabase.auth.signOut({ scope: "local" });
         throw redirect({ to: "/auth" });
