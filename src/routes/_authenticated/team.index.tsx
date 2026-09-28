@@ -155,7 +155,7 @@ function TeamDirectoryPage() {
               )}
 
               <Button asChild className="w-full" variant="outline">
-                <Link to={`/team/${member.user_id}` as "/team/$userId"}>Ver perfil</Link>
+                <Link to={`/team/${member.user_id}` as any}>Ver perfil</Link>
               </Button>
             </Card>
           ))}
