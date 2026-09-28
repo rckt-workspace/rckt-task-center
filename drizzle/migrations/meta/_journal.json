@@ -36,6 +36,13 @@
       "when": 1790633221222,
       "tag": "0004_fix_task_access_and_restore_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790633241325,
+      "tag": "0005_fix_tasks_admin_write_policies",
+      "breakpoints": true
     }
   ]
 }
