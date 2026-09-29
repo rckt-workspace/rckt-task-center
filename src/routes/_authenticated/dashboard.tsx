@@ -41,7 +41,7 @@ import { KanbanBoard } from "@/components/rckt/KanbanBoard";
 import { TaskDialog } from "@/components/rckt/TaskDialog";
 import { useTaskTemplates } from "@/lib/rckt/useTaskTemplates";
 import { TaskDetailDialog } from "@/components/rckt/TaskDetailDialog";
-import { LoginNotices, noticeSessionKey } from "@/components/rckt/LoginNotices";
+import { TaskNotificationBell } from "@/components/rckt/TaskNotificationBell";
 import { WeekPicker } from "@/components/rckt/WeekPicker";
 import { SummaryTable } from "@/components/rckt/SummaryTables";
 import { WorkloadWidget } from "@/components/rckt/WorkloadWidget";
@@ -128,7 +128,17 @@ function Dashboard() {
   const [historico, setHistorico] = useState(false);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const [soloHoy, setSoloHoy] = useState(false);
-  const [celebrate, setCelebrate] = useState(0);
+  const [celebrate, setCelebrate] = useState(0);\n  const [pendingNotificationTaskId, setPendingNotificationTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingNotificationTaskId) return;
+    const task = store.data.tasks.find((item) => item.id === pendingNotificationTaskId);
+    if (!task) return;
+
+    setPendingNotificationTaskId(null);
+    if (!historico && task.semana !== semana) setSemana(task.semana);
+    setViewing(task);
+  }, [pendingNotificationTaskId, store.data.tasks, historico, semana]);
 
   const changeEstado = async (t: Task, estado: Estado) => {
     try {
@@ -318,8 +328,6 @@ function Dashboard() {
   };
 
   const signOut = async () => {
-    const uid = store.session?.user.id;
-    if (uid && typeof window !== "undefined") window.sessionStorage.removeItem(noticeSessionKey(uid));
     await supabase.auth.signOut();
     void navigate({ to: "/auth", replace: true });
   };
@@ -337,6 +345,22 @@ function Dashboard() {
               Centro de Control Semanal
             </h1>
           </div>
+          {store.session ? (
+            <TaskNotificationBell
+              userId={store.session.user.id}
+              onOpenTask={(taskId) => {
+                const task = store.data.tasks.find((item) => item.id === taskId);
+                if (task) {
+                  if (!historico && task.semana !== semana) setSemana(task.semana);
+                  setViewing(task);
+                  return;
+                }
+
+                setPendingNotificationTaskId(taskId);
+                void store.refresh();
+              }}
+            />
+          ) : null}
           <button
             onClick={() => navigate({ to: "/profile" })}
             className="flex items-center gap-2 p-1 rounded hover:bg-header-foreground/10 transition"
@@ -813,24 +837,6 @@ function Dashboard() {
             : undefined
         }
       />
-
-      {store.session ? (
-        <LoginNotices
-          userId={store.session.user.id}
-          isAdmin={isCoord}
-          tasks={store.data.tasks}
-          hydrated={store.loadedFor === store.session.user.id}
-          onOpenTask={(t) => {
-            if (!historico && t.semana !== semana) setSemana(t.semana);
-            setViewing(t);
-          }}
-          onGoToList={() => {
-            const nuevas = store.data.tasks.filter((t) => t.semana !== semana);
-            if (!historico && scopeTasks.length === 0 && nuevas.length > 0) setHistorico(true);
-            document.getElementById("lista-tareas")?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
-        />
-      ) : null}
 
       <TaskDetailDialog
         open={!!viewing}
