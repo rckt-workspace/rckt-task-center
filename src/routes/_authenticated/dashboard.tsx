@@ -128,7 +128,8 @@ function Dashboard() {
   const [historico, setHistorico] = useState(false);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
   const [soloHoy, setSoloHoy] = useState(false);
-  const [celebrate, setCelebrate] = useState(0);\n  const [pendingNotificationTaskId, setPendingNotificationTaskId] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(0);
+  const [pendingNotificationTaskId, setPendingNotificationTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!pendingNotificationTaskId) return;
