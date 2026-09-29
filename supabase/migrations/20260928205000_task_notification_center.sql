@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   recipient_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   actor_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
-  task_id uuid REFERENCES public.tasks(id) ON DELETE CASCADE,
+  task_id uuid REFERENCES public.tasks(id) ON DELETE SET NULL,
   type text NOT NULL,
   title text NOT NULL,
   message text NOT NULL DEFAULT '',
