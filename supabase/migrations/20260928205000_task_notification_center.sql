@@ -405,7 +405,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO public
-AS $
+AS $$
 DECLARE
   v_actor uuid := auth.uid();
   v_actor_name text;
@@ -446,7 +446,7 @@ BEGIN
 
   RETURN OLD;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS trg_notifications_task_delete ON public.tasks;
 CREATE TRIGGER trg_notifications_task_delete
