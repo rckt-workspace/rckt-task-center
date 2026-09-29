@@ -395,6 +395,65 @@ AFTER INSERT OR UPDATE ON public.tasks
 FOR EACH ROW
 EXECUTE FUNCTION public.notifications_on_task_change();
 
+
+-- ------------------------------------------------------------
+-- Task deletion: notify assignees before the task is removed
+-- ------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.notifications_on_task_delete()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO public
+AS $
+DECLARE
+  v_actor uuid := auth.uid();
+  v_actor_name text;
+  v_recipient uuid;
+BEGIN
+  v_actor_name := public.notification_actor_name(v_actor);
+
+  FOR v_recipient IN
+    SELECT DISTINCT recipients.user_id
+    FROM (
+      SELECT OLD.assigned_to AS user_id
+
+      UNION
+
+      SELECT ta.user_id
+      FROM public.task_assignees ta
+      WHERE ta.task_id = OLD.id
+    ) recipients
+    JOIN public.profiles p ON p.id = recipients.user_id
+    WHERE COALESCE(p.is_active, true) = true
+      AND (v_actor IS NULL OR recipients.user_id <> v_actor)
+  LOOP
+    -- task_id is intentionally null because the task is about to be deleted.
+    PERFORM public.insert_task_notification(
+      v_recipient,
+      v_actor,
+      NULL,
+      'task_deleted',
+      'Tarea eliminada',
+      v_actor_name || ' eliminó "' || OLD.tarea || '".',
+      jsonb_build_object(
+        'deleted_task_id', OLD.id,
+        'task_name', OLD.tarea,
+        'cliente', OLD.cliente
+      )
+    );
+  END LOOP;
+
+  RETURN OLD;
+END;
+$;
+
+DROP TRIGGER IF EXISTS trg_notifications_task_delete ON public.tasks;
+CREATE TRIGGER trg_notifications_task_delete
+BEFORE DELETE ON public.tasks
+FOR EACH ROW
+EXECUTE FUNCTION public.notifications_on_task_delete();
+
 -- ------------------------------------------------------------
 -- Comments: notify manager + task participants, excluding author
 -- ------------------------------------------------------------
@@ -513,7 +572,12 @@ DECLARE
   v_title text;
   v_message text;
 BEGIN
-  v_row := CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+  IF TG_OP = 'DELETE' THEN
+    v_row := OLD;
+  ELSE
+    v_row := NEW;
+  END IF;
+
   v_actor := COALESCE(auth.uid(), v_row.owner_id);
 
   -- Admin checklist actions are not expected in the current UI and do not
@@ -579,6 +643,7 @@ EXECUTE FUNCTION public.notifications_on_step_change();
 
 -- Trigger functions must not be directly invokable by app users.
 REVOKE ALL ON FUNCTION public.notifications_on_task_change() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.notifications_on_task_delete() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.notifications_on_comment_insert() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.notifications_on_attachment_insert() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.notifications_on_step_change() FROM PUBLIC, anon, authenticated;
