@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -128,38 +128,163 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          read_at: string | null
+          recipient_id: string
+          task_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          read_at?: string | null
+          recipient_id: string
+          task_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          read_at?: string | null
+          recipient_id?: string
+          task_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_path: string | null
+          bio: string
           cargo: string
           comments_seen_at: string | null
           created_at: string
           email: string
           full_name: string
           id: string
+          is_active: boolean
+          last_login_at: string | null
+          must_change_password: boolean
+          password_updated_at: string | null
           tasks_seen_at: string | null
           updated_at: string
         }
         Insert: {
+          avatar_path?: string | null
+          bio?: string
           cargo?: string
           comments_seen_at?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id: string
+          is_active?: boolean
+          last_login_at?: string | null
+          must_change_password?: boolean
+          password_updated_at?: string | null
           tasks_seen_at?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_path?: string | null
+          bio?: string
           cargo?: string
           comments_seen_at?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: string
+          is_active?: boolean
+          last_login_at?: string | null
+          must_change_password?: boolean
+          password_updated_at?: string | null
           tasks_seen_at?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      task_assignees: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          is_primary: boolean
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          is_primary?: boolean
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          is_primary?: boolean
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignees_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignees_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_attachments: {
         Row: {
@@ -468,12 +593,93 @@ export type Database = {
     }
     Functions: {
       can_access_task: { Args: { _task_id: string }; Returns: boolean }
+      get_team_directory: {
+        Args: never
+        Returns: {
+          avatar_path: string
+          bio: string
+          cargo: string
+          full_name: string
+          responsibilities: string[]
+          role: string
+          role_summary: string
+          role_title: string
+          specialties: string[]
+          strengths: string[]
+          typical_work: string[]
+          user_id: string
+        }[]
+      }
+      get_team_member_avatar: { Args: { _user_id: string }; Returns: string }
+      get_team_task_progress: {
+        Args: never
+        Returns: {
+          assignee_ids: string[]
+          assignee_names: string[]
+          cliente: string
+          estado: string
+          fecha_limite: string
+          primary_name: string
+          primary_user_id: string
+          semana: string
+          steps_done: number
+          steps_total: number
+          tarea: string
+          task_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      insert_task_notification: {
+        Args: {
+          _actor_id: string
+          _message: string
+          _metadata?: Json
+          _recipient_id: string
+          _task_id: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      notification_actor_name: { Args: { _actor_id: string }; Returns: string }
+      notify_task_admins: {
+        Args: {
+          _actor_id: string
+          _message: string
+          _metadata?: Json
+          _task_id: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      notify_task_assignees: {
+        Args: {
+          _actor_id: string
+          _message: string
+          _metadata?: Json
+          _task_id: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      notify_task_audience: {
+        Args: {
+          _actor_id: string
+          _message: string
+          _metadata?: Json
+          _task_id: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
